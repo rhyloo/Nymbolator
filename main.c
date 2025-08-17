@@ -24,13 +24,21 @@ static void FileReader(char *file){
   (void) close(file_descriptor);
 }
 
+static void HandleComment(){
+  while(*raw != '\n'){
+    *raw++;
+  }
+}
+
 static void FileParsing(){
   while(*raw != EOF){
     printf("%c\n",*raw);
-    if (*raw == TOKEN_COMMENT){
-      printf("Comment detected!\n");
+    if (*raw == TOKEN_COMMENT && *raw++ == TOKEN_COMMENT){
+      *raw--;
+      HandleComment();
+    }else{
+      *raw++;
     }
-    *raw++;
   }
 }
 
