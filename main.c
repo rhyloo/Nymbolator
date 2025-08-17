@@ -8,9 +8,16 @@
 #include <string.h>
 #include <unistd.h>
 
+
 #define TOKEN_COMMENT '-'
 
 static char *raw;
+
+typedef struct {
+    char *content;
+    size_t length;
+    int type;
+} StructToken;
 
 static void FileReader(char *file){
   int file_descriptor;
@@ -25,19 +32,58 @@ static void FileReader(char *file){
 }
 
 static void HandleComment(){
-  while(*raw != '\n'){
+  *raw++;
+  if(*raw == TOKEN_COMMENT){
+    while(*raw != '\n'){
+      *raw++;
+    }
     *raw++;
+  }{
+    *raw--;
   }
 }
 
+static void HandleSymbol(){
+  StructToken token;
+  token.length = 1;
+  token.content = malloc(token.length);
+  memcpy(token.content, raw, token.length);
+  token.content[token.length] = '\0'; // añadir terminador
+  printf("%s\n",token.content);
+  *raw++;
+}
+
+static void HandleText(){
+  char *token_start = raw;
+  StructToken token;
+  
+  while (isalnum(*raw) || *raw == '_'){
+    *raw++;
+  }
+  
+  token.length = raw - token_start;
+  token.content = malloc(token.length);
+  memcpy(token.content, token_start, token.length);
+  token.content[token.length] = '\0'; // añadir terminador
+  printf("%s\n",token.content);
+  *raw--;
+}
+
+
 static void FileParsing(){
   while(*raw != EOF){
-    printf("%c\n",*raw);
-    if (*raw == TOKEN_COMMENT && *raw++ == TOKEN_COMMENT){
-      *raw--;
+   
+    if (*raw == TOKEN_COMMENT){
       HandleComment();
-    }else{
+    }
+    
+    if(*raw == '\n' || *raw == ' '){
       *raw++;
+    }else if (isalnum(*raw)){
+      HandleText();
+      *raw++;
+    }else{
+      HandleSymbol();
     }
   }
 }
