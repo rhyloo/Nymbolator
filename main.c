@@ -8,16 +8,55 @@
 #include <string.h>
 #include <unistd.h>
 
-
+/* Macros */
 #define TOKEN_COMMENT '-'
 
-static char *raw;
-
+/* Structures */
 typedef struct {
     char *content;
     size_t length;
     int type;
 } StructToken;
+
+/* Variables */
+static char *raw;
+static size_t TokensCount = 0;
+static size_t TokensCapacity = 0;
+static StructToken *Tokens = NULL;
+static StructToken token;
+
+/* Functions */
+static void FileReader(char *file);
+static void FileTokenizer();
+static void FileAnalyzer();
+
+int main(int argc, char *argv[]){
+
+  if (argc != 2) {
+    (void) fputs("usage: pl0c file.pl0\n", stderr);
+    exit(1);
+  }
+
+  FileReader(argv[1]);
+  FileTokenizer();
+  FileAnalyzer();
+
+  return 0;
+}
+
+
+static void FileAnalyzer(){
+  for(int i = 0; i < TokensCount; i++){
+    if(Tokens[i].length > 0){
+      printf("%d\t%ld\t%s\n",i,Tokens[i].length,Tokens[i].content);  
+    }
+  }
+}
+
+/*
+ * Function: FileReader
+ * Opens a file an load in memory its contents.
+ */
 
 static void FileReader(char *file){
   int file_descriptor;
@@ -31,6 +70,7 @@ static void FileReader(char *file){
   (void) close(file_descriptor);
 }
 
+
 static void HandleComment(){
   *raw++;
   if(*raw == TOKEN_COMMENT){
@@ -43,34 +83,46 @@ static void HandleComment(){
   }
 }
 
-static void HandleSymbol(){
-  StructToken token;
+
+static StructToken HandleSymbol(){
+
   token.length = 1;
   token.content = malloc(token.length);
   memcpy(token.content, raw, token.length);
-  token.content[token.length] = '\0'; // añadir terminador
-  printf("%s\n",token.content);
-  *raw++;
+  token.content[token.length] = '\0';
+  raw++;
+  
+  return token;
 }
 
-static void HandleText(){
+static StructToken HandleText(){
   char *token_start = raw;
-  StructToken token;
-  
+
   while (isalnum(*raw) || *raw == '_'){
-    *raw++;
+    raw++;
   }
   
   token.length = raw - token_start;
-  token.content = malloc(token.length);
+  token.content = malloc(token.length+1);
   memcpy(token.content, token_start, token.length);
-  token.content[token.length] = '\0'; // añadir terminador
-  printf("%s\n",token.content);
-  *raw--;
+  token.content[token.length] = '\0';
+  
+  return token;
 }
 
 
-static void FileParsing(){
+void AddToken(StructToken token){
+    if(TokensCount >= TokensCapacity){
+        TokensCapacity = TokensCapacity == 0 ? 20 : TokensCapacity + 1;
+        Tokens = realloc(Tokens, TokensCapacity * sizeof(StructToken));
+    }
+    Tokens[TokensCount++] = token;
+}
+
+
+static void FileTokenizer(){
+  StructToken token;
+  
   while(*raw != EOF){
    
     if (*raw == TOKEN_COMMENT){
@@ -78,25 +130,15 @@ static void FileParsing(){
     }
     
     if(*raw == '\n' || *raw == ' '){
-      *raw++;
+      raw++;
     }else if (isalnum(*raw)){
-      HandleText();
-      *raw++;
+      token = HandleText();
+      AddToken(token);
     }else{
-      HandleSymbol();
+      token = HandleSymbol();
+      AddToken(token);
     }
   }
 }
 
-int main(int argc, char *argv[]){
 
-  if (argc != 2) {
-    (void) fputs("usage: pl0c file.pl0\n", stderr);
-    exit(1);
-  }
-
-  FileReader(argv[1]);
-  FileParsing();
-
-  return 0;
-}
