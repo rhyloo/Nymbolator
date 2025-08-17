@@ -344,6 +344,16 @@ static void parse(void){
     ++raw;
     (void) fprintf(stdout, "%lu|%s|\t", line, keywords_type[type]);
 
+    if((strcasecmp(token->content, TOKEN_ENTITY) == 0)){
+      ++raw;
+      if((strcasecmp(keywords_type[type], "IDENTIFIER") == 0)){
+	++raw;
+	if((strcasecmp(token->content, TOKEN_IS) == 0)){
+	  printf("Ok!");
+	}
+      }
+    }
+    
     if(type == WORD || type == IDENTIFIER ||type == NUMBER){
       (void)fputs(token->content, stdout);
     }else if (type == SYMBOL){
