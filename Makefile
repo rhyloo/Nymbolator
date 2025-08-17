@@ -1,4 +1,4 @@
 compile:
-	gcc -o nymbolator main.c
+	gcc -o bin/nymbolator main.c
 execute:
-	./nymbolator top.vhdl
+	bin/nymbolator top.vhdl
