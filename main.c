@@ -8,31 +8,10 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include "tools.c"
 
-/* Macros */
-#define TOKEN_COMMENT '-'
-#define TOKEN_SEMICOLON ";"
-#define TOKEN_ENTITY "ENTITY"
-#define TOKEN_END "END"
 
-/* Structures */
-typedef struct {
-  char *content;
-  size_t length;
-  int type;
-} StructToken;
-
-/* Variables */
-static char *raw;
-static size_t TokensCount = 0;
-static size_t TokensCapacity = 0;
-static StructToken *Tokens = NULL;
-static StructToken token;
-
-/* Functions */
-static void FileReader(char *file);
-static void FileTokenizer();
-static void FileAnalyzer();
+bool write_entity_svg(const StructEntity *e, const char *path);
 
 int main(int argc, char *argv[]){
 
@@ -45,382 +24,189 @@ int main(int argc, char *argv[]){
   FileTokenizer();
   FileAnalyzer();
   
+  write_entity_svg(&entity, "entity.svg");
 
   return 0;
 }
 
-
-
-/* Option C: Hash table or trie (for large language parsing)
-   
-   If you’re eventually building a full VHDL parser, a hash table or
-   trie lookup for keywords is the industry-standard approach. For
-   small files, Option B is usually enough. */
-/* Keyword enum */
-typedef enum {
-  KW_UNKNOWN,
-  KW_LIBRARY,
-  KW_USE,
-  KW_ALL,
-  KW_ENTITY,
-  KW_TYPE,
-  KW_SIGNAL,
-  KW_FUNCTION,
-  KW_VARIABLE,
-  KW_RANGE,
-  KW_TO,
-  KW_DOWNTO,
-  KW_STD_LOGIC_VECTOR,
-  KW_INTEGER,
-  KW_FOR,
-  KW_IN,
-  KW_LOOP,
-  KW_GENERIC,
-  KW_PORT,
-  KW_OUT,
-  KW_ARCHITECTURE,
-  KW_BEGIN,
-  KW_IS,
-  KW_OF,
-  KW_END,
-  KW_COMMENT,
-  KW_DOT,
-  KW_EQUAL,
-  KW_COMMA,
-  KW_SEMICOLON,
-  KW_ASSIGN,
-  KW_HASH,
-  KW_LESSTHAN,
-  KW_GREATERTHAN,
-  KW_PLUS,
-  KW_MINUS,
-  KW_MULTIPLY,
-  KW_DIVIDE,
-  KW_LPAREN,
-  KW_RPAREN,
-  KW_POSITIVE,
-  KW_STD_ULOGIC,
-  KW_STD_ULOGIC_VECTOR,
-  KW_NATURAL,
-  KW_BOOLEAN,
-  KW_UNSIGNED
-} KeywordType;
-
-/* Keyword mapping table */
-typedef struct {
-  const char *str;
-  KeywordType type;
-} KeywordMap;
-
-KeywordMap keyword_table[] = {
-  {"library", KW_LIBRARY},
-  {"use", KW_USE},
-  {"all", KW_ALL},
-  {TOKEN_ENTITY, KW_ENTITY},
-  {"type", KW_TYPE},
-  {"signal", KW_SIGNAL},
-  {"function", KW_FUNCTION},
-  {"variable", KW_VARIABLE},
-  {"range", KW_RANGE},
-  {"to", KW_TO},
-  {"downto", KW_DOWNTO},
-  {"std_logic_vector", KW_STD_LOGIC_VECTOR},
-  {"integer", KW_INTEGER},
-  {"for", KW_FOR},
-  {"in", KW_IN},
-  {"loop", KW_LOOP},
-  {"generic", KW_GENERIC},
-  {"port", KW_PORT},
-  {"out", KW_OUT},
-  {"architecture", KW_ARCHITECTURE},
-  {"begin", KW_BEGIN},
-  {"is", KW_IS},
-  {"of", KW_OF},
-  {TOKEN_END, KW_END},
-  {"-", KW_COMMENT},
-  {".", KW_DOT},
-  {"=", KW_EQUAL},
-  {",", KW_COMMA},
-  {TOKEN_SEMICOLON, KW_SEMICOLON},
-  {":", KW_ASSIGN},
-  {"#", KW_HASH},
-  {"<", KW_LESSTHAN},
-  {">", KW_GREATERTHAN},
-  {"+", KW_PLUS},
-  {"-", KW_MINUS},
-  {"*", KW_MULTIPLY},
-  {"/", KW_DIVIDE},
-  {"(", KW_LPAREN},
-  {")", KW_RPAREN},
-  {"positive", KW_POSITIVE},
-  {"std_ulogic", KW_STD_ULOGIC},
-  {"std_ulogic_vector", KW_STD_ULOGIC_VECTOR},
-  {"natural", KW_NATURAL},
-  {"boolean", KW_BOOLEAN},
-  {"unsigned", KW_UNSIGNED}
-};
-
-static KeywordType GetKeywordType(const char *token) {
-  for (int i = 0; i < sizeof(keyword_table)/sizeof(keyword_table[0]); i++) {
-    if (strcasecmp(token, keyword_table[i].str) == 0)
-      return keyword_table[i].type;
-  }
-  return KW_UNKNOWN;
+/* Utilidad para escapar XML básico */
+static void xml_escape(const char *s, FILE *f) {
+    for (; *s; ++s) {
+        if (*s == '&')      fputs("&amp;", f);
+        else if (*s == '<') fputs("&lt;", f);
+        else if (*s == '>') fputs("&gt;", f);
+        else                fputc(*s, f);
+    }
 }
 
-const char* keyword_to_string(KeywordType type) {
-    size_t table_size = sizeof(keyword_table) / sizeof(keyword_table[0]);
-    for (size_t i = 0; i < table_size; i++) {
-        if (keyword_table[i].type == type) {
-            return keyword_table[i].str;
+/* Cuenta cuántos puertos hay de cada lado */
+static void count_ports(const StructEntity *e, int *nin, int *nout, int *ninout){
+    *nin = *nout = *ninout = 0;
+    for (size_t i=0; i<e->portsCount; ++i){
+        if (e->ports[i].mode == PM_IN) (*nin)++;
+        else if (e->ports[i].mode == PM_OUT) (*nout)++;
+        else (*ninout)++;
+    }
+}
+
+/* Genera el SVG a fichero */
+bool write_entity_svg(const StructEntity *entity, const char *path){
+    /* Layout básico (ajústalo a gusto) */
+    const int margin = 150;
+    const int pin_len = 18;
+    const int row_h = 18;
+    const int header_h = 36;      // título
+    const int generics_h = (int)(entity->genericsCount ? (entity->genericsCount * row_h + 12) : 0);
+    const int section_gap = 10;
+
+    int nin, nout, ninout;
+    count_ports(entity, &nin, &nout, &ninout);
+
+    int left_height  = nin * row_h;
+    int right_height = nout * row_h;
+    int bottom_height = (ninout ? (row_h + 8) : 0);
+
+    /* Altura del bloque central (zona de caja) */
+    int body_h = header_h + section_gap + generics_h + section_gap
+               + (nin > nout ? left_height : right_height)
+               + 2*section_gap;
+
+    /* Anchos */
+    int box_w = 480;              // ancho del rectángulo de la entidad
+    int text_pad = 8;
+    int svg_w = margin + pin_len + box_w + pin_len + margin;
+    int svg_h = margin + body_h + bottom_height + pin_len + margin;
+
+    FILE *f = fopen(path, "w");
+    if (!f) return false;
+
+    fprintf(f,
+      "<svg xmlns='http://www.w3.org/2000/svg' width='%d' height='%d' viewBox='0 0 %d %d'>\n",
+      svg_w, svg_h, svg_w, svg_h);
+    /* Fondo */
+    fprintf(f, "<rect x='0' y='0' width='%d' height='%d' fill='white-smoke' stroke='none'/>\n", svg_w, svg_h);
+
+    /* Caja principal */
+    int box_x = margin + pin_len;
+    int box_y = margin;
+    fprintf(f, "<rect x='%d' y='%d' width='%d' height='%d' rx='10' ry='10' fill='#f6f8ff' stroke='#334' stroke-width='1.5'/>\n",
+            box_x, box_y, box_w, body_h);
+
+    /* Título (nombre entidad) */
+    fprintf(f, "  <text x='%d' y='%d' font-family='monospace' font-size='16' font-weight='bold' fill='#223'>",
+            box_x + box_w/2, box_y + 22);
+    
+    fprintf(f, "<tspan text-anchor='left'>");
+    xml_escape(entity->name, f);
+    fprintf(f, "</tspan></text>\n");
+
+    /* Separador bajo el título */
+    int y = box_y + header_h;
+    fprintf(f, "  <line x1='%d' y1='%d' x2='%d' y2='%d' stroke='#99a' stroke-width='1'/>\n",
+            box_x+6, y, box_x+box_w-6, y);
+
+    /* Generics (si hay) */
+    if (entity->genericsCount){
+        int gy = y + section_gap;
+        fprintf(f, "  <text x='%d' y='%d' font-family='monospace' font-size='12' fill='#445'>Generics:</text>\n",
+                box_x + text_pad, gy);
+        gy += row_h;
+
+        for (size_t i=0; i<entity->genericsCount; ++i, gy += row_h){
+            fprintf(f, "  <text x='%d' y='%d' font-family='monospace' font-size='12' fill='#223'>",
+                    box_x + text_pad + 10, gy);
+            xml_escape(entity->generics[i].name, f);
+            fprintf(f, "</text>\n");
+        }
+        /* Separador */
+        y = box_y + header_h + section_gap + generics_h;
+        fprintf(f, "  <line x1='%d' y1='%d' x2='%d' y2='%d' stroke='#99a' stroke-width='1'/>\n",
+                box_x+6, y, box_x+box_w-6, y);
+    }
+
+    /* Puertos: calcula offsets verticales para alinear filas izquierda/derecha */
+    int pins_top = y + section_gap;
+
+    /* Izquierda (IN) */
+    int ly = pins_top;
+    for (size_t i=0; i<entity->portsCount; ++i){
+        if (entity->ports[i].mode != PM_IN) continue;
+        int pin_x1 = box_x - pin_len;
+        int pin_x2 = box_x;
+        int pin_y  = ly + row_h/2;
+        /* pin */
+        fprintf(f, "  <line x1='%d' y1='%d' x2='%d' y2='%d' stroke='#2a5' stroke-width='2'/>\n",
+                pin_x1, pin_y, pin_x2, pin_y);
+        /* etiqueta nombre */
+        fprintf(f, "  <text x='%d' y='%d' font-family='monospace' font-size='12' text-anchor='end' fill='#111'>",
+                pin_x1-6, pin_y+4);
+        xml_escape(entity->ports[i].name, f);
+        fprintf(f, "</text>\n");
+        /* tipo */
+        fprintf(f, "  <text x='%d' y='%d' font-family='monospace' font-size='11' text-anchor='start' fill='#556'>: ");
+        fprintf(f, "</text>\n"); /* placeholder */
+        fprintf(f, "  <text x='%d' y='%d' font-family='monospace' font-size='11' text-anchor='start' fill='#556'>",
+                box_x + text_pad, pin_y+4);
+        xml_escape(KWS(entity->ports[i].type), f);
+        fprintf(f, "</text>\n");
+        ly += row_h;
+    }
+
+    /* Derecha (OUT) */
+    int ry = pins_top;
+    for (size_t i=0; i<entity->portsCount; ++i){
+        if (entity->ports[i].mode != PM_OUT) continue;
+        int pin_x1 = box_x + box_w;
+        int pin_x2 = box_x + box_w + pin_len;
+        int pin_y  = ry + row_h/2;
+        /* pin */
+        fprintf(f, "  <line x1='%d' y1='%d' x2='%d' y2='%d' stroke='#a52' stroke-width='2'/>\n",
+                pin_x1, pin_y, pin_x2, pin_y);
+        /* etiqueta nombre */
+        fprintf(f, "  <text x='%d' y='%d' font-family='monospace' font-size='12' text-anchor='start' fill='#111'>",
+                pin_x2+6, pin_y+4);
+        xml_escape(entity->ports[i].name, f);
+        fprintf(f, "</text>\n");
+        /* tipo (alineado dentro de la caja, lado derecho) */
+        fprintf(f, "  <text x='%d' y='%d' font-family='monospace' font-size='11' text-anchor='end' fill='#556'>",
+                box_x + box_w - text_pad, pin_y+4);
+        xml_escape(KWS(entity->ports[i].type), f);
+        fprintf(f, "</text>\n");
+        ry += row_h;
+    }
+
+    /* Abajo (INOUT) */
+    int by = box_y + body_h;  // borde inferior de la caja
+    if (ninout){
+        /* separador abajo */
+        fprintf(f, "  <line x1='%d' y1='%d' x2='%d' y2='%d' stroke='#99a' stroke-width='1'/>\n",
+                box_x+6, by-6, box_x+box_w-6, by-6);
+
+        int col = 0;
+        int col_w = 160; // ancho por pin inout
+        int start_x = box_x + (box_w - (col_w * ninout)) / 2;
+
+        for (size_t i=0; i<entity->portsCount; ++i){
+            if (entity->ports[i].mode != PM_INOUT) continue;
+            int px = start_x + col*col_w + col_w/2;
+            /* pin vertical */
+            fprintf(f, "  <line x1='%d' y1='%d' x2='%d' y2='%d' stroke='#25a' stroke-width='2'/>\n",
+                    px, by, px, by + pin_len);
+            /* etiqueta */
+            fprintf(f, "  <text x='%d' y='%d' font-family='monospace' font-size='12' text-anchor='middle' fill='#111'>",
+                    px, by + pin_len + 14);
+            xml_escape(entity->ports[i].name, f);
+            fprintf(f, "</text>\n");
+            /* tipo */
+            fprintf(f, "  <text x='%d' y='%d' font-family='monospace' font-size='11' text-anchor='middle' fill='#556'>",
+                    px, by + pin_len + 28);
+            xml_escape(KWS(entity->ports[i].type), f);
+            fprintf(f, "</text>\n");
+            col++;
         }
     }
-    return "UNKNOWN";
+
+    fprintf(f, "</svg>\n");
+    fclose(f);
+    return true;
 }
-
-
-
-typedef struct {
-  char *name;
-  KeywordType type;  // e.g. KW_POSITIVE, KW_INTEGER, ...
-} StructGenerics;
-
-typedef enum {
-  PM_IN, PM_OUT, PM_INOUT, PM_BUFFER 
-} PortMode;  
-
-typedef struct {
-  char *name;
-  PortMode mode;
-  KeywordType type; // type of port signal (KW_STD_ULOGIC, KW_INTEGER, etc.)
-} StructPorts;
-
-typedef struct {
-  char *name;
-  StructGenerics *generics;
-  size_t genericsCount;
-  StructPorts *ports;
-  size_t portsCount;
-} StructEntity;
-
-
-#define PAUSE()            \
-    do {                       \
-        int c;                 \
-        do {                   \
-            c = getchar();     \
-        } while (c != '\n' && c != EOF); \
-    } while (0)
-
-
-static int TokenNumber = 0;
-#define GETKEYWORD(position) GetKeywordType(Tokens[TokenNumber-position].content)
-#define AVOIDOF() TokenNumber < TokensCount
-#define KWS(text) keyword_to_string(text)
-
-static void HandleEntity() {
-  StructEntity entity = {};
-  bool finish = false;
-  
-  TokenNumber++; 
-  entity.name = Tokens[TokenNumber].content;
-  TokenNumber=+2;
-  
-  while (AVOIDOF()) {
-
-    if(TokenNumber > 2){
-      if(GETKEYWORD(0) == KW_END && GETKEYWORD(-1) == KW_ENTITY && GETKEYWORD(-2) == KW_SEMICOLON){
-	TokenNumber++;
-	break;
-      }else if (GETKEYWORD(0) == KW_END && GETKEYWORD(-1) == KW_ENTITY &&  strcmp(Tokens[TokenNumber+2].content, entity.name) == 0 && GETKEYWORD(-3) == KW_SEMICOLON){
-	TokenNumber = TokenNumber + 2;
-	break;
-      }
-    }
-
-    if (GETKEYWORD(0) == KW_GENERIC) {
-      TokenNumber = TokenNumber+2;
-      while (AVOIDOF()) {
-	
-	if(TokenNumber > 2){
-	  if(GETKEYWORD(1) == KW_SEMICOLON && GETKEYWORD(2) == KW_RPAREN && GETKEYWORD(3) != KW_RPAREN){
-	    TokenNumber--;
-	    break;
-	  }
-	}
-	
-	entity.generics = realloc(entity.generics, (entity.genericsCount+1)*sizeof(StructGenerics));
-	entity.generics[entity.genericsCount].name = Tokens[TokenNumber].content;
-	TokenNumber=TokenNumber+2;
-	entity.generics[entity.genericsCount].type = GETKEYWORD(0);
-	entity.genericsCount++;	
-
-	if (GETKEYWORD(0) == KW_SEMICOLON){
-	    TokenNumber++;
-	}else{
-	  while(GETKEYWORD(0) != KW_SEMICOLON){
-	    TokenNumber++;
-	  }	  
-	}
-	TokenNumber++;
-      }
-    }else if (GETKEYWORD(0) == KW_PORT) {
-      TokenNumber = TokenNumber+2;
-
-      
-      while (AVOIDOF()) {
-	if(TokenNumber > 3){
-	  if(GETKEYWORD(1) == KW_SEMICOLON && GETKEYWORD(2) == KW_RPAREN && GETKEYWORD(0) == KW_END){
-	    TokenNumber--;
-	    break;
-	  }
-	}
-	entity.ports = realloc(entity.ports, (entity.portsCount+1)*sizeof(StructPorts));
-		
-	entity.ports[entity.portsCount].name = Tokens[TokenNumber].content;	
-	TokenNumber = TokenNumber + 2;
-	if (!strcmp(Tokens[TokenNumber].content,"in")){
-	  entity.ports[entity.portsCount].mode = PM_IN;
-	}else if (!strcmp(Tokens[TokenNumber].content,"out")){
-	  entity.ports[entity.portsCount].mode = PM_OUT;
-	}else if (!strcmp(Tokens[TokenNumber].content,"inout")){
-	  entity.ports[entity.portsCount].mode = PM_INOUT;
-	}else {
-	  entity.ports[entity.portsCount].mode = PM_BUFFER;
-	}
-
-	TokenNumber++; 
-	entity.ports[entity.portsCount].type = GETKEYWORD(0);
-	entity.portsCount++;
-
-	if (GETKEYWORD(0) == KW_SEMICOLON){
-	    TokenNumber++;
-	}else{
-	  while(GETKEYWORD(0) != KW_SEMICOLON){
-	    TokenNumber++;
-	  }	  
-	}
-	TokenNumber++;
-      }
-    }
-    TokenNumber++;
-  }
-
-  printf("Entity %s parsed: %zu generics, %zu ports\n",entity.name, entity.genericsCount,entity.portsCount);
-  for (size_t i=0; i<entity.genericsCount; i++)
-    printf("  Generic: %s, %s\n", entity.generics[i].name, KWS(entity.generics[i].type));
-  for (size_t i=0; i<entity.portsCount; i++)
-    printf("  Port: %s, %s\n", entity.ports[i].name, KWS(entity.ports[i].type));
-}
-
-/* Analyzer */
-static void FileAnalyzer() {
-  while(TokenNumber < TokensCount){
-    switch (GetKeywordType(Tokens[TokenNumber].content)) {
-    case KW_ENTITY:
-      /* printf("Found ENTITY\n"); */
-      HandleEntity();
-      break;
-    case KW_ARCHITECTURE:
-      printf("Found ARCHITECTURE\n");
-      break;
-    case KW_LIBRARY:
-      printf("Found LIBRARY\n");
-      break;
-    default:
-      break;
-    }
-    TokenNumber++;
-  }
-}
-
-
-/*
- * Function: FileReader
- * Opens a file an load in memory its contents.
- */
-
-static void FileReader(char *file){
-  int file_descriptor;
-  struct stat stats;
-
-  file_descriptor = open(file, O_RDONLY, 0);
-  fstat(file_descriptor, &stats);
-  raw = malloc(stats.st_size + 1);
-  read(file_descriptor, raw, stats.st_size);
-  raw[stats.st_size] = EOF;
-  (void) close(file_descriptor);
-}
-
-
-static void HandleComment(){
-  *raw++;
-  if(*raw == TOKEN_COMMENT){
-    while(*raw != '\n'){
-      *raw++;
-    }
-    *raw++;
-  }{
-    *raw--;
-  }
-}
-
-
-static StructToken HandleSymbol(){
-
-  token.length = 1;
-  token.content = malloc(token.length);
-  memcpy(token.content, raw, token.length);
-  token.content[token.length] = '\0';
-  raw++;
-  
-  return token;
-}
-
-static StructToken HandleText(){
-  char *token_start = raw;
-
-  while (isalnum(*raw) || *raw == '_'){
-    raw++;
-  }
-  
-  token.length = raw - token_start;
-  token.content = malloc(token.length+1);
-  memcpy(token.content, token_start, token.length);
-  token.content[token.length] = '\0';
-  
-  return token;
-}
-
-
-void AddToken(StructToken token){
-  if(TokensCount >= TokensCapacity){
-    TokensCapacity = TokensCapacity == 0 ? 20 : TokensCapacity + 1;
-    Tokens = realloc(Tokens, TokensCapacity * sizeof(StructToken));
-  }
-  Tokens[TokensCount++] = token;
-}
-
-
-static void FileTokenizer(){
-  StructToken token;
-  
-  while(*raw != EOF){
-   
-    if (*raw == TOKEN_COMMENT){
-      HandleComment();
-    }
-    
-    if(*raw == '\n' || *raw == ' '){
-      raw++;
-    }else if (isalnum(*raw)){
-      token = HandleText();
-      AddToken(token);
-    }else{
-      token = HandleSymbol();
-      AddToken(token);
-    }
-  }
-}
-
-
