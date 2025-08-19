@@ -11,7 +11,7 @@
 #include "tools.c"
 
 
-bool write_entity_svg(const StructEntity *e, const char *path);
+bool write_entity_svg(const StructEntity *entity, const char *path);
 
 int main(int argc, char *argv[]){
 

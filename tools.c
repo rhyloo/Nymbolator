@@ -243,9 +243,9 @@ static void HandleEntity() {
 	TokenNumber++;
       }
     }else if (GETKEYWORD(0) == KW_PORT) {
-      printf("%s\n",Tokens[TokenNumber].content);
+      /* printf("%s\n",Tokens[TokenNumber].content); */
       TokenNumber = TokenNumber+2;
-      printf("%s\n",Tokens[TokenNumber].content);
+      /* printf("%s\n",Tokens[TokenNumber].content); */
       
       while (AVOIDOF()) {
 
@@ -292,42 +292,72 @@ static void HandleEntity() {
     printf("  Port: %s, %s\n", entity.ports[i].name, KWS(entity.ports[i].type));
 }
 
-/* typedef struct {
-     char *name;
-     StructGenerics *generics;
-     size_t genericsCount;
-     StructPorts *ports;
-     size_t portsCount;
-     StructPorts *bus;
-     size_t busCount;
-   } StructComponents;
-   
-   StructComponents *components = NULL;
-   int componentsCount = 0;
-   
-   static void HandleArchitecture(){
-     while(GETKEYWORD(0)!= KW_BEGIN){
-       TokenNumber++; 
-     }
-     while(AVOIDOF()){
-       /\* if(TokenNumber > 3){
-            if(GETKEYWORD(1) == KW_SEMICOLON && GETKEYWORD(2) == KW_RPAREN && GETKEYWORD(0) == KW_END){
-          	    TokenNumber--;
-          	    break;
-          	  }
-          	} *\/
-       TokenNumber = TokenNumber + 3;
-       components = realloc(components, (componentsCount+1)*sizeof(StructComponents));  
-       components->name = Tokens[TokenNumber].content;
-       printf("%s\n",Tokens[TokenNumber].content);
-       TokenNumber++; 
-       if (GETKEYWORD(0) == KW_GENERIC) {
-         TokenNumber++; 
-         printf("Print%s\n",Tokens[TokenNumber].content);
-         TokenNumber=+2;
-         PAUSE();
-     }
-   } */
+typedef struct {
+  char *name;
+  StructGenerics *generics;
+  size_t genericsCount;
+  StructPorts *ports;
+  size_t portsCount;
+  StructPorts *bus;
+  size_t busCount;
+} StructComponents;
+
+StructComponents *components = NULL;
+int componentsCount = 0;
+
+static void HandleArchitecture(){
+  while(GETKEYWORD(0)!= KW_BEGIN){
+    TokenNumber++; 
+  }
+
+  while(AVOIDOF()){
+    TokenNumber = TokenNumber + 2;
+
+    while(GETKEYWORD(0) == KW_ASSIGN && GETKEYWORD(-1) == KW_UNKNOWN && GETKEYWORD(-2) == KW_PORT){
+      TokenNumber++;
+
+      components = realloc(components, (componentsCount+1)*sizeof(StructComponents));
+      memset(&components[componentsCount], 0, sizeof(StructComponents));
+
+      components[componentsCount].name = Tokens[TokenNumber].content;
+      printf("Instancia: %s\n", components[componentsCount].name);
+      TokenNumber++;
+
+      if (GETKEYWORD(0) == KW_PORT) {
+        TokenNumber+=3;
+
+        while(GETKEYWORD(0) != KW_SEMICOLON && GETKEYWORD(1) != KW_RPAREN){
+
+          components[componentsCount].ports = realloc(
+              components[componentsCount].ports,
+              (components[componentsCount].portsCount+1) * sizeof(StructPorts));
+      
+          components[componentsCount].ports[components[componentsCount].portsCount].name = Tokens[TokenNumber].content;
+
+          components[componentsCount].bus = realloc(
+              components[componentsCount].bus,
+              (components[componentsCount].busCount+1) * sizeof(StructPorts));
+      
+          components[componentsCount].bus[components[componentsCount].busCount].name = Tokens[TokenNumber+3].content;
+
+          printf("Signals: %s, %s\n",
+                 components[componentsCount].ports[components[componentsCount].portsCount].name,
+                 components[componentsCount].bus[components[componentsCount].busCount].name);
+
+          components[componentsCount].portsCount++;
+          components[componentsCount].busCount++;
+
+          TokenNumber = TokenNumber + 5;
+        }
+      }
+
+      TokenNumber = TokenNumber + 2;
+      printf("\n");
+      componentsCount++;
+    }
+    break;
+  }
+}
 
 /* Analyzer */
 void FileAnalyzer() {
@@ -338,7 +368,7 @@ void FileAnalyzer() {
       break;
     case KW_ARCHITECTURE:
       printf("Found ARCHITECTURE\n");
-      /* HandleArchitecture(); */
+      HandleArchitecture();
       break;
     case KW_LIBRARY:
       printf("Found LIBRARY\n");
