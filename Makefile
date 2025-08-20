@@ -8,3 +8,7 @@ execute:
 drawer:
 	gcc -o bin/svg_drawer svg_drawer.c
 	bin/svg_drawer
+astar:
+	gcc -o bin/astar astar.c
+	bin/astar
+
