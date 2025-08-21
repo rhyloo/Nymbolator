@@ -4,33 +4,72 @@
 #include <limits.h>
 #include <string.h>
 #include <stdint.h>
-
-#define COLUMNS 50
-#define ROWS 50
-
-typedef struct {
-  int coord_x;
-  int coord_y;
-} Point;
-
-typedef struct {
-  Point child;
-  Point parent;
-  bool list_open, list_closed;
-  int g_cost;   // distance from start
-  int h_cost;   // heuristic to goal
-  int f_cost;   // g + h
-} Node;
+#include "astar.h"
 
 static uint8_t **matrix;
 static Node nodes[ROWS][COLUMNS];
 
-static Point **paths;
-static int *paths_lengths;
-static int num_paths;
+Point **paths;
+int *paths_lengths;
+int num_paths;
 
 static int direction_x[4] = {0, 0, -1, 1};
 static int direction_y[4] = {-1, 1, 0, 0};
+
+
+static bool IsValidPoint(int x, int y);
+static int heuristic(int x1, int y1, int x2, int y2);
+static void ValidNeighbor(int child_x, int child_y, int neighbor_x, int neighbor_y, int end_x, int end_y);
+static void AreValidPoints(int start_x, int start_y, int end_x, int end_y);
+static Node* GetLowestF();
+static void SavePathFound(int end_x, int end_y);
+static void InitializationMatrix();
+static void InitializationPaths();
+static void InitializationNodes(bool init);
+static void DrawMatrixWithPath(int path_index);
+static void VisualizePaths();
+
+void DrawMatrix(){
+  for(int i=0;i<ROWS;i++){
+    for(int j=0;j<COLUMNS;j++){
+      char c='.';
+      if(matrix[i][j]==1) c='#';
+      printf("%c",c);
+    }
+    printf("\n");
+  }
+}
+
+// ---------------------------- Main -----------------------------------
+/* int main(){
+     Initialization();
+     
+     // ------------------------ Ejemplo de obstáculos ------------------------
+     DefineRestriction(0, 0, 5, 3);    
+     DefineRestriction(9, 9, 3, 5);    
+     DefineRestriction(20, 20, 5, 5);  
+     DefineRestriction(45, 0, 5, 5);   
+     DefineRestriction(0, 45, 5, 5);   
+     DefineRestriction(40, 40, 5, 5);  
+   
+     // ------------------------ Casos de test ------------------------
+     PathFinderAStar(12, 10, 44, 1);       
+     PathFinderAStar(21, 25, 44, 1);       
+     PathFinderAStar(41, 45, 44, 1);       
+   
+     SimplifyPathsToCorners();
+   
+     printf("Matriz base:\n");
+     for(int i=0;i<ROWS;i++){
+       for(int j=0;j<COLUMNS;j++) printf("%c",matrix[i][j]==1?'#':'.');
+       printf("\n");
+     }
+   
+     VisualizePaths();
+   
+     FreeMemory();
+     return 0;
+   } */
 
 // ---------------------------- Helpers --------------------------------
 static bool IsValidPoint(int x, int y){
@@ -157,14 +196,14 @@ static void InitializationNodes(bool init){
     }
 }
 
-static void Initialization(){
+void Initialization(){
   InitializationMatrix();
   InitializationPaths();
   InitializationNodes(true);
 }
 
 // ---------------------------- A* -----------------------
-static void PathFinderAStar(int start_x, int start_y, int end_x, int end_y){
+void PathFinderAStar(int start_x, int start_y, int end_x, int end_y){
   AreValidPoints(start_x, start_y, end_x, end_y);
   InitializationNodes(false);
 
@@ -202,7 +241,7 @@ static void PathFinderAStar(int start_x, int start_y, int end_x, int end_y){
 }
 
 // ---------------------------- Restricciones y visual -----------------
-static void DefineRestriction(int pos_x, int pos_y, int width, int height){
+void DefineRestriction(int pos_x, int pos_y, int width, int height){
   for(int i = pos_y; i < pos_y + height && i < ROWS; i++)
     for(int j = pos_x; j < pos_x + width && j < COLUMNS; j++)
       matrix[i][j] = 1;
@@ -238,7 +277,7 @@ static void VisualizePaths(){
   }
 }
 
-static void SimplifyPathsToCorners() {
+void SimplifyPathsToCorners() {
   for(int p = 0; p < num_paths; p++){
     int len = paths_lengths[p];
     if(len <= 2) continue; // no hay que simplificar
@@ -273,7 +312,7 @@ static void SimplifyPathsToCorners() {
 }
 
 // ---------------------------- Liberación memoria --------------------
-static void FreeMemory(){
+void FreeMemory(){
   for(int i = 0; i < ROWS; i++) free(matrix[i]);
   free(matrix);
 
@@ -282,33 +321,4 @@ static void FreeMemory(){
   free(paths_lengths);
 }
 
-// ---------------------------- Main -----------------------------------
-int main(){
-  Initialization();
 
-  // ------------------------ Ejemplo de obstáculos ------------------------
-  DefineRestriction(0, 0, 5, 3);    
-  DefineRestriction(9, 9, 3, 5);    
-  DefineRestriction(20, 20, 5, 5);  
-  DefineRestriction(45, 0, 5, 5);   
-  DefineRestriction(0, 45, 5, 5);   
-  DefineRestriction(40, 40, 5, 5);  
-
-  // ------------------------ Casos de test ------------------------
-  PathFinderAStar(12, 10, 44, 1);       
-  PathFinderAStar(21, 25, 44, 1);       
-  PathFinderAStar(41, 45, 44, 1);       
-
-  SimplifyPathsToCorners();
-
-  printf("Matriz base:\n");
-  for(int i=0;i<ROWS;i++){
-    for(int j=0;j<COLUMNS;j++) printf("%c",matrix[i][j]==1?'#':'.');
-    printf("\n");
-  }
-
-  VisualizePaths();
-
-  FreeMemory();
-  return 0;
-}

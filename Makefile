@@ -1,3 +1,16 @@
+CC = gcc
+CFLAGS = -Iinclude -Wall -g
+SRC = src/astar.c src/drawer.c
+# SRC = $(wildcard src/*.c)   
+BIN = bin/drawer
+
+drawer: $(SRC)
+	$(CC) $(CFLAGS) -o $(BIN) $(SRC)
+	./$(BIN)
+
+clean:
+	rm -f $(BIN)
+
 compile:
 	gcc -o bin/nymbolator main.c
 debug:
@@ -5,10 +18,8 @@ debug:
 	bin/nymbolator top.vhdl
 execute:
 	bin/nymbolator top.vhdl
-drawer:
-	gcc -o bin/svg_drawer svg_drawer.c
-	bin/svg_drawer
 astar:
 	gcc -o bin/astar astar.c
 	bin/astar
+
 
