@@ -1,9 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <limits.h>
-#include <string.h>
-#include <stdint.h>
+#include "headers.h"
 #include "astar.h"
 
 static uint8_t **matrix;
@@ -30,8 +25,8 @@ static void DrawMatrixWithPath(int path_index);
 static void VisualizePaths();
 
 void DrawMatrix(){
-  for(int i=0;i<ROWS;i++){
-    for(int j=0;j<COLUMNS;j++){
+  for(int i=0;i<*svg_height;i++){
+    for(int j=0;j<*svg_width;j++){
       char c='.';
       if(matrix[i][j]==1) c='#';
       printf("%c",c);
@@ -165,10 +160,10 @@ static void SavePathFound(int end_x, int end_y){
 
 // ---------------------------- Inicializaciones -----------------------
 static void InitializationMatrix(){
-  matrix = malloc(ROWS * sizeof(uint8_t*));
-  for(int i = 0; i < ROWS; i++){
-    matrix[i] = malloc(COLUMNS * sizeof(uint8_t));
-    for(int j = 0; j < COLUMNS; j++)
+  matrix = malloc(*svg_height * sizeof(uint8_t*));
+  for(int i = 0; i < *svg_height; i++){
+    matrix[i] = malloc(*svg_width * sizeof(uint8_t));
+    for(int j = 0; j < *svg_width; j++)
       matrix[i][j] = 0;
   }
 }
@@ -198,8 +193,8 @@ static void InitializationNodes(bool init){
 
 void Initialization(){
   InitializationMatrix();
-  InitializationPaths();
-  InitializationNodes(true);
+  /* InitializationPaths();
+     InitializationNodes(true); */
 }
 
 // ---------------------------- A* -----------------------
@@ -241,10 +236,12 @@ void PathFinderAStar(int start_x, int start_y, int end_x, int end_y){
 }
 
 // ---------------------------- Restricciones y visual -----------------
-void DefineRestriction(int pos_x, int pos_y, int width, int height){
-  for(int i = pos_y; i < pos_y + height && i < ROWS; i++)
-    for(int j = pos_x; j < pos_x + width && j < COLUMNS; j++)
-      matrix[i][j] = 1;
+void DefineRestriction(StructComponent *component, int number_components){
+  for(int elemento = 0; elemento < number_components; elemento++){
+     for(int i = component[elemento].pos_y - (component[elemento].height/2); i < component[elemento].pos_y + (component[elemento].height/2); i++)
+      for(int j = component[elemento].pos_x - (component[elemento].width/2); j < component[elemento].pos_x + (component[elemento].width/2); j++)
+	matrix[i][j] = 1;
+  }
 }
 
 static void DrawMatrixWithPath(int path_index){
