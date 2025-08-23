@@ -1,31 +1,14 @@
 CC = gcc
 CFLAGS = -Iinclude -Wall -g
-SRC = src/astar.c src/drawer.c
-# SRC = $(wildcard src/*.c)   
-BIN = bin/drawer
+LDLIBS = -lm
 
-drawer: $(SRC)
-	$(CC) $(CFLAGS) -o $(BIN) $(SRC)
+SRC = src/auto_router.c src/stb_impl.c src/auto_placer.c src/drawer.c src/main.c
+BIN = bin/nymbolator
+
+compile: $(SRC)
+	$(CC) $(CFLAGS) -o $(BIN) $(SRC) $(LDLIBS)
 	./$(BIN)
 
 clean:
-	rm -f $(BIN)
-
-compile:
-	gcc -o bin/nymbolator main.c
-debug:
-	gcc -o bin/nymbolator main.c
-	bin/nymbolator top.vhdl
-auto_placer:
-	gcc $(CFLAGS) -o bin/auto_placer src/auto_placer.c  src/astar.c -lm
-	bin/auto_placer
-execute:
-	bin/nymbolator top.vhdl
-astar:
-	gcc -o bin/astar astar.c
-	bin/astar
-test:
-	gcc -Wall -g -o bin/test src/test.c -lm
-	bin/test
-
+	rm -r -f $(BIN) bin/
 

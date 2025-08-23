@@ -1,191 +1,99 @@
-<svg xmlns='http://www.w3.org/2000/svg' width='1000' height='900'>
-<style>text{font-family:system-ui,Segoe UI,Roboto,sans-serif;font-size:12px}rect{rx:14;ry:14;fill:#f3f4f6;stroke:#111827;stroke-width:1.5}line{stroke:#111827;stroke-width:1.5}circle{fill:#111827}path{stroke:#2563eb;stroke-width:2;fill:none}.label{fill:#111827}.bus{fill:#2563eb}</style>
+<svg xmlns='http://www.w3.org/2000/svg' width='369' height='519'>
+<style>text{font-family:system-ui,Segoe UI,Roboto,sans-serif;font-size:12px}rect{rx:3;ry:3;fill:#f3f4f6;stroke:#111827;stroke-width:1.5}line{stroke:#111827;stroke-width:1.5}circle{fill:#111827}path{stroke:#2563eb;stroke-width:2;fill:none}.label{fill:#111827}.bus{fill:#2563eb}</style>
 <defs><marker id='arrow' markerWidth='10' markerHeight='10' refX='10' refY='3' orient='auto' markerUnits='strokeWidth'><path d='M0,0 L0,6 L9,3 z' fill='#2563eb'/></marker></defs>
-<rect x='60' y='60' width='180' height='76'/>
-<text class='label' x='72' y='78'>clk25gen</text>
-<circle cx='48' cy='88' r='3'/>
-<line x1='48' y1='88' x2='60' y2='88'/>
-<text class='label' x='40' y='92' text-anchor='end'>clk50</text>
-<circle cx='240' cy='88' r='3'/>
-<line x1='240' y1='88' x2='240' y2='88'/>
-<text class='label' x='248' y='92'>clk25</text>
-<rect x='340' y='60' width='180' height='98'/>
-<text class='label' x='352' y='78'>debounce_circuit</text>
-<circle cx='328' cy='88' r='3'/>
-<line x1='328' y1='88' x2='340' y2='88'/>
-<text class='label' x='320' y='92' text-anchor='end'>clk</text>
-<circle cx='328' cy='110' r='3'/>
-<line x1='328' y1='110' x2='340' y2='110'/>
-<text class='label' x='320' y='114' text-anchor='end'>input</text>
-<circle cx='520' cy='88' r='3'/>
-<line x1='520' y1='88' x2='520' y2='88'/>
-<text class='label' x='528' y='92'>output</text>
-<rect x='620' y='60' width='180' height='230'/>
-<text class='label' x='632' y='78'>ov7670_controller</text>
-<circle cx='608' cy='88' r='3'/>
-<line x1='608' y1='88' x2='620' y2='88'/>
-<text class='label' x='600' y='92' text-anchor='end'>clk</text>
-<circle cx='608' cy='110' r='3'/>
-<line x1='608' y1='110' x2='620' y2='110'/>
-<text class='label' x='600' y='114' text-anchor='end'>resend</text>
-<circle cx='800' cy='88' r='3'/>
-<line x1='800' y1='88' x2='800' y2='88'/>
-<text class='label' x='808' y='92'>sioc</text>
-<circle cx='800' cy='110' r='3'/>
-<line x1='800' y1='110' x2='800' y2='110'/>
-<text class='label' x='808' y='114'>siod</text>
-<circle cx='800' cy='132' r='3'/>
-<line x1='800' y1='132' x2='800' y2='132'/>
-<text class='label' x='808' y='136'>conf_done</text>
-<circle cx='800' cy='154' r='3'/>
-<line x1='800' y1='154' x2='800' y2='154'/>
-<text class='label' x='808' y='158'>pwdn</text>
-<circle cx='800' cy='176' r='3'/>
-<line x1='800' y1='176' x2='800' y2='176'/>
-<text class='label' x='808' y='180'>reset</text>
-<circle cx='608' cy='132' r='3'/>
-<line x1='608' y1='132' x2='620' y2='132'/>
-<text class='label' x='600' y='136' text-anchor='end'>xclk_in</text>
-<circle cx='800' cy='198' r='3'/>
-<line x1='800' y1='198' x2='800' y2='198'/>
-<text class='label' x='808' y='202'>xclk_out</text>
-<rect x='60' y='280' width='180' height='186'/>
-<text class='label' x='72' y='298'>ov7670_capture</text>
-<circle cx='48' cy='308' r='3'/>
-<line x1='48' y1='308' x2='60' y2='308'/>
-<text class='label' x='40' y='312' text-anchor='end'>pclk</text>
-<circle cx='48' cy='330' r='3'/>
-<line x1='48' y1='330' x2='60' y2='330'/>
-<text class='label' x='40' y='334' text-anchor='end'>vsync</text>
-<circle cx='48' cy='352' r='3'/>
-<line x1='48' y1='352' x2='60' y2='352'/>
-<text class='label' x='40' y='356' text-anchor='end'>href</text>
-<circle cx='48' cy='374' r='3'/>
-<line x1='48' y1='374' x2='60' y2='374'/>
-<text class='label' x='40' y='378' text-anchor='end'>d</text>
-<circle cx='240' cy='308' r='3'/>
-<line x1='240' y1='308' x2='240' y2='308'/>
-<text class='label' x='248' y='312'>addr</text>
-<circle cx='240' cy='330' r='3'/>
-<line x1='240' y1='330' x2='240' y2='330'/>
-<text class='label' x='248' y='334'>dout</text>
-<circle cx='240' cy='352' r='3'/>
-<line x1='240' y1='352' x2='240' y2='352'/>
-<text class='label' x='248' y='356'>we</text>
-<rect x='340' y='280' width='180' height='186'/>
-<text class='label' x='352' y='298'>frame_buffer</text>
-<circle cx='328' cy='308' r='3'/>
-<line x1='328' y1='308' x2='340' y2='308'/>
-<text class='label' x='320' y='312' text-anchor='end'>weA</text>
-<circle cx='328' cy='330' r='3'/>
-<line x1='328' y1='330' x2='340' y2='330'/>
-<text class='label' x='320' y='334' text-anchor='end'>clkA</text>
-<circle cx='328' cy='352' r='3'/>
-<line x1='328' y1='352' x2='340' y2='352'/>
-<text class='label' x='320' y='356' text-anchor='end'>addrA</text>
-<circle cx='328' cy='374' r='3'/>
-<line x1='328' y1='374' x2='340' y2='374'/>
-<text class='label' x='320' y='378' text-anchor='end'>dinA</text>
-<circle cx='328' cy='396' r='3'/>
-<line x1='328' y1='396' x2='340' y2='396'/>
-<text class='label' x='320' y='400' text-anchor='end'>clkB</text>
-<circle cx='328' cy='418' r='3'/>
-<line x1='328' y1='418' x2='340' y2='418'/>
-<text class='label' x='320' y='422' text-anchor='end'>addrB</text>
-<circle cx='520' cy='308' r='3'/>
-<line x1='520' y1='308' x2='520' y2='308'/>
-<text class='label' x='528' y='312'>doutB</text>
-<rect x='620' y='280' width='180' height='120'/>
-<text class='label' x='632' y='298'>address_generator</text>
-<circle cx='608' cy='308' r='3'/>
-<line x1='608' y1='308' x2='620' y2='308'/>
-<text class='label' x='600' y='312' text-anchor='end'>clk25</text>
-<circle cx='608' cy='330' r='3'/>
-<line x1='608' y1='330' x2='620' y2='330'/>
-<text class='label' x='600' y='334' text-anchor='end'>enable</text>
-<circle cx='608' cy='352' r='3'/>
-<line x1='608' y1='352' x2='620' y2='352'/>
-<text class='label' x='600' y='356' text-anchor='end'>vsync</text>
-<circle cx='800' cy='308' r='3'/>
-<line x1='800' y1='308' x2='800' y2='308'/>
-<text class='label' x='808' y='312'>address</text>
-<rect x='60' y='500' width='180' height='98'/>
-<text class='label' x='72' y='518'>vga_imagegenerator</text>
-<circle cx='48' cy='528' r='3'/>
-<line x1='48' y1='528' x2='60' y2='528'/>
-<text class='label' x='40' y='532' text-anchor='end'>Data_in</text>
-<circle cx='48' cy='550' r='3'/>
-<line x1='48' y1='550' x2='60' y2='550'/>
-<text class='label' x='40' y='554' text-anchor='end'>active_area</text>
-<circle cx='240' cy='528' r='3'/>
-<line x1='240' y1='528' x2='240' y2='528'/>
-<text class='label' x='248' y='532'>RGB_out</text>
-<rect x='340' y='500' width='180' height='120'/>
-<text class='label' x='352' y='518'>VGA_timing_synch</text>
-<circle cx='328' cy='528' r='3'/>
-<line x1='328' y1='528' x2='340' y2='528'/>
-<text class='label' x='320' y='532' text-anchor='end'>clk25</text>
-<circle cx='520' cy='528' r='3'/>
-<line x1='520' y1='528' x2='520' y2='528'/>
-<text class='label' x='528' y='532'>Hsync</text>
-<circle cx='520' cy='550' r='3'/>
-<line x1='520' y1='550' x2='520' y2='550'/>
-<text class='label' x='528' y='554'>Vsync</text>
-<circle cx='520' cy='572' r='3'/>
-<line x1='520' y1='572' x2='520' y2='572'/>
-<text class='label' x='528' y='576'>activeArea</text>
-<path d='M 240 88 L 339 88 L 339 158 L 520 158 L 520 132 L 608 132' marker-end='url(#arrow)'/>
-<text class='bus' x='430' y='104'>clk25</text>
-<path d='M 240 88 L 328 88 L 328 396' marker-end='url(#arrow)'/>
-<text class='bus' x='290' y='236'>clk25</text>
-<path d='M 240 88 L 339 88 L 339 158 L 608 158 L 608 308' marker-end='url(#arrow)'/>
-<text class='bus' x='430' y='192'>clk25</text>
-<path d='M 240 88 L 328 88 L 328 528' marker-end='url(#arrow)'/>
-<text class='bus' x='290' y='302'>clk25</text>
-<path d='M 520 88 L 608 88 L 608 110' marker-end='url(#arrow)'/>
-<text class='bus' x='570' y='93'>resend</text>
-<path d='M 800 88 L 836 88' marker-end='url(#arrow)'/>
-<text class='bus' x='840' y='82'>ov7670_sioc</text>
-<path d='M 800 110 L 836 110' marker-end='url(#arrow)'/>
-<text class='bus' x='840' y='104'>ov7670_siod</text>
-<path d='M 800 132 L 836 132' marker-end='url(#arrow)'/>
-<text class='bus' x='840' y='126'>led</text>
-<path d='M 800 154 L 836 154' marker-end='url(#arrow)'/>
-<text class='bus' x='840' y='148'>ov7670_pwdn</text>
-<path d='M 800 176 L 836 176' marker-end='url(#arrow)'/>
-<text class='bus' x='840' y='170'>ov7670_reset</text>
-<path d='M 800 198 L 836 198' marker-end='url(#arrow)'/>
-<text class='bus' x='840' y='192'>ov7670_xclk</text>
-<path d='M 240 308 L 328 308 L 328 352' marker-end='url(#arrow)'/>
-<text class='bus' x='290' y='324'>wr_a</text>
-<path d='M 240 330 L 328 330 L 328 374' marker-end='url(#arrow)'/>
-<text class='bus' x='290' y='346'>wr_d</text>
-<path d='M 240 352 L 240 308 L 328 308' marker-end='url(#arrow)'/>
-<text class='bus' x='290' y='324'>wren</text>
-<path d='M 520 308 L 520 466 L 48 466 L 48 528' marker-end='url(#arrow)'/>
-<text class='bus' x='290' y='412'>rd_d</text>
-<path d='M 800 308 L 800 400 L 520 400 L 520 466 L 339 466 L 339 418 L 328 418' marker-end='url(#arrow)'/>
-<text class='bus' x='570' y='357'>rd_a</text>
-<path d='M 240 528 L 276 528' marker-end='url(#arrow)'/>
-<text class='bus' x='280' y='522'>vga_rgb</text>
-<path d='M 520 528 L 556 528' marker-end='url(#arrow)'/>
-<text class='bus' x='560' y='522'>vga_hsync</text>
-<path d='M 520 550 L 520 352 L 608 352' marker-end='url(#arrow)'/>
-<text class='bus' x='570' y='445'>vga_vsync_sig</text>
-<path d='M 520 572 L 520 330 L 608 330' marker-end='url(#arrow)'/>
-<text class='bus' x='570' y='445'>active</text>
-<path d='M 520 572 L 520 620 L 339 620 L 339 598 L 59 598 L 59 550 L 48 550' marker-end='url(#arrow)'/>
-<text class='bus' x='290' y='555'>active</text>
-<path d='M 8 88 L 30 88 L 48 88' marker-end='url(#arrow)'/>
-<text class='bus' x='2' y='82' text-anchor='end'>clk50</text>
-<path d='M 288 110 L 310 110 L 328 110' marker-end='url(#arrow)'/>
-<text class='bus' x='282' y='104' text-anchor='end'>pb</text>
-<path d='M 8 308 L 30 308 L 48 308' marker-end='url(#arrow)'/>
-<text class='bus' x='2' y='302' text-anchor='end'>ov7670_pclk</text>
-<path d='M 8 330 L 30 330 L 48 330' marker-end='url(#arrow)'/>
-<text class='bus' x='2' y='324' text-anchor='end'>ov7670_vsync</text>
-<path d='M 8 352 L 30 352 L 48 352' marker-end='url(#arrow)'/>
-<text class='bus' x='2' y='346' text-anchor='end'>ov7670_href</text>
-<path d='M 8 374 L 30 374 L 48 374' marker-end='url(#arrow)'/>
-<text class='bus' x='2' y='368' text-anchor='end'>ov7670_data</text>
+<rect x='0' y='0' width='369' height='519' fill='none' stroke='#111827' stroke-width='1'/>
+<rect x='170' y='190' width='150' height='70'/>
+<text class='label' x='245' y='185' text-anchor='middle' style='font-weight:bold;'>VGA_timing_synch</text>
+<text class='label' x='180' y='215' text-anchor='start'>clk25</text>
+<rect x='165' y='205' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='310' y='215' text-anchor='end'>Hsync</text>
+<rect x='315' y='205' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='310' y='230' text-anchor='end'>Vsync</text>
+<rect x='315' y='220' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='310' y='245' text-anchor='end'>activeArea</text>
+<rect x='315' y='235' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<rect x='30' y='470' width='80' height='30'/>
+<text class='label' x='70' y='465' text-anchor='middle' style='font-weight:bold;'>clk25gen</text>
+<text class='label' x='40' y='495' text-anchor='start'>clk50</text>
+<rect x='25' y='485' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='100' y='495' text-anchor='end'>clk25</text>
+<rect x='105' y='485' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<rect x='210' y='30' width='100' height='130'/>
+<text class='label' x='260' y='25' text-anchor='middle' style='font-weight:bold;'>frame_buffer</text>
+<text class='label' x='220' y='55' text-anchor='start'>weA</text>
+<rect x='205' y='45' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='220' y='70' text-anchor='start'>clkA</text>
+<rect x='205' y='60' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='220' y='85' text-anchor='start'>addrA</text>
+<rect x='205' y='75' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='220' y='100' text-anchor='start'>dinA</text>
+<rect x='205' y='90' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='220' y='115' text-anchor='start'>clkB</text>
+<rect x='205' y='105' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='220' y='130' text-anchor='start'>addrB</text>
+<rect x='205' y='120' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='300' y='55' text-anchor='end'>doutB</text>
+<rect x='305' y='45' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<rect x='170' y='290' width='140' height='70'/>
+<text class='label' x='240' y='285' text-anchor='middle' style='font-weight:bold;'>address_generator</text>
+<text class='label' x='180' y='315' text-anchor='start'>clk25</text>
+<rect x='165' y='305' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='180' y='330' text-anchor='start'>enable</text>
+<rect x='165' y='320' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='180' y='345' text-anchor='start'>vsync</text>
+<rect x='165' y='335' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='300' y='315' text-anchor='end'>address</text>
+<rect x='305' y='305' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<rect x='230' y='390' width='130' height='50'/>
+<text class='label' x='295' y='385' text-anchor='middle' style='font-weight:bold;'>debounce_circuit</text>
+<text class='label' x='240' y='415' text-anchor='start'>clk</text>
+<rect x='225' y='405' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='240' y='430' text-anchor='start'>input</text>
+<rect x='225' y='420' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='350' y='415' text-anchor='end'>output</text>
+<rect x='355' y='405' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<rect x='30' y='390' width='170' height='50'/>
+<text class='label' x='115' y='385' text-anchor='middle' style='font-weight:bold;'>vga_image_generator</text>
+<text class='label' x='40' y='415' text-anchor='start'>Data_in</text>
+<rect x='25' y='405' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='40' y='430' text-anchor='start'>active_area</text>
+<rect x='25' y='420' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='190' y='415' text-anchor='end'>RGB_out</text>
+<rect x='195' y='405' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<rect x='30' y='30' width='150' height='130'/>
+<text class='label' x='105' y='25' text-anchor='middle' style='font-weight:bold;'>ov7670_controller</text>
+<text class='label' x='40' y='55' text-anchor='start'>clk</text>
+<rect x='25' y='45' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='40' y='70' text-anchor='start'>resend</text>
+<rect x='25' y='60' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='170' y='55' text-anchor='end'>sioc</text>
+<rect x='175' y='45' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='170' y='70' text-anchor='end'>siod</text>
+<rect x='175' y='60' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='170' y='85' text-anchor='end'>conf_done</text>
+<rect x='175' y='75' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='170' y='100' text-anchor='end'>pwdn</text>
+<rect x='175' y='90' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='170' y='115' text-anchor='end'>reset</text>
+<rect x='175' y='105' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='40' y='85' text-anchor='start'>xclk_in</text>
+<rect x='25' y='75' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='170' y='130' text-anchor='end'>xclk_out</text>
+<rect x='175' y='120' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<rect x='30' y='190' width='110' height='90'/>
+<text class='label' x='85' y='185' text-anchor='middle' style='font-weight:bold;'>ov7670_capture</text>
+<text class='label' x='40' y='215' text-anchor='start'>pclk</text>
+<rect x='25' y='205' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='40' y='230' text-anchor='start'>vsync</text>
+<rect x='25' y='220' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='40' y='245' text-anchor='start'>href</text>
+<rect x='25' y='235' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='40' y='260' text-anchor='start'>d</text>
+<rect x='25' y='250' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='130' y='215' text-anchor='end'>addr</text>
+<rect x='135' y='205' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='130' y='230' text-anchor='end'>dout</text>
+<rect x='135' y='220' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
+<text class='label' x='130' y='245' text-anchor='end'>we</text>
+<rect x='135' y='235' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>
 </svg>

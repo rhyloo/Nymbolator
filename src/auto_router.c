@@ -1,4 +1,4 @@
-#include "headers.h"
+#include "main.h"
 #include "astar.h"
 
 static uint8_t **matrix;
@@ -191,11 +191,7 @@ static void InitializationNodes(bool init){
     }
 }
 
-void Initialization(){
-  InitializationMatrix();
-  /* InitializationPaths();
-     InitializationNodes(true); */
-}
+
 
 // ---------------------------- A* -----------------------
 void PathFinderAStar(int start_x, int start_y, int end_x, int end_y){
@@ -233,6 +229,18 @@ void PathFinderAStar(int start_x, int start_y, int end_x, int end_y){
       ValidNeighbor(current->child.coord_x, current->child.coord_y, neighbor_x, neighbor_y, end_x, end_y);
     }
   }
+}
+
+void Initialization(){
+  InitializationMatrix();
+  /* InitializationPaths();
+     InitializationNodes(true); */
+}
+
+void AutoRouter(StructComponent *component, int number_components){
+  Initialization();
+  DefineRestriction(component,number_components);
+  
 }
 
 // ---------------------------- Restricciones y visual -----------------

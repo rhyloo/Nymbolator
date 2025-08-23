@@ -1,14 +1,22 @@
-#ifndef HEADERS_H
-#define HEADERS_H
+#ifndef MAIN_H
+#define MAIN_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
+#include <sys/stat.h>
+#include <ctype.h>
+#include <fcntl.h>
 #include <limits.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <stdbool.h>
 #include <stdint.h>
-#include <string.h>
 #include <math.h>
+
+#define GAP 30
+#define WINDOWSIZE 1024
 
 typedef struct {
     const char *name;       // port label shown near the pin
@@ -18,7 +26,7 @@ typedef struct {
 } StructPort;
 
 typedef struct {
-    const char *component_name;
+    char *component_name;
     StructPort *ports;
     size_t port_count;
     int pos_x, pos_y;               // top-left position of block
@@ -39,11 +47,10 @@ typedef struct {
   int f_cost;   // g + h
 } Node;
 
-static int height_val = 1024;
-static int width_val  = 1024;
-static int *svg_height = &height_val;
-static int *svg_width  = &width_val;
+/* extern int height_val;
+   extern int width_val; */
+extern int *svg_height;
+extern int *svg_width;
 
 static int max(int a, int b){ return a > b ? a:b;}
-
 #endif
