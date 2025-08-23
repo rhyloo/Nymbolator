@@ -1,7 +1,7 @@
 #include "main.h"
 #include "stb_rect_pack.h"
-#include "astar.h"
 #include "auto_placer.h"
+#include "tools.h"
 
 static int GetMaxNumberPorts(StructPort *port, int port_count);
 static int GetMaxNameSize(StructPort *port, int port_count);

@@ -1,5 +1,5 @@
 #include "main.h"
-#include "astar.h"
+#include "auto_router.h"
 
 static uint8_t **matrix;
 static Node nodes[ROWS][COLUMNS];

@@ -1,6 +1,7 @@
 #include "main.h"
 #include "drawer.h"
 #include "auto_placer.h"
+#include "auto_router.h"
 
 static int height_val = WINDOWSIZE;
 static int width_val  = WINDOWSIZE;
@@ -12,7 +13,7 @@ Point **paths;
 int *paths_lengths;
 int num_paths;
 
-#define ELEMENTOS 5
+#define ELEMENTOS 8
 
 int main() {
 
@@ -100,10 +101,10 @@ int main() {
     clk25gen,
     frame_buffer,
     address_generator,
-    debounce_circuit
-    /* vga_imagegenerator,
-       ov7670_controller,
-       ov7670_capture */
+    debounce_circuit,
+    vga_imagegenerator,
+    ov7670_controller,
+    ov7670_capture
   };
 
   (void) AutoLayout(comps, ELEMENTOS);

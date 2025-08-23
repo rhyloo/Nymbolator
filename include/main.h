@@ -56,5 +56,5 @@ extern int num_paths;
 extern int *svg_height;
 extern int *svg_width;
 
-static int max(int a, int b){ return a > b ? a:b;}
+
 #endif
