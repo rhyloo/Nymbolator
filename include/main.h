@@ -47,6 +47,10 @@ typedef struct {
   int f_cost;   // g + h
 } Node;
 
+extern Point **paths;
+extern int *paths_lengths;
+extern int num_paths;
+
 /* extern int height_val;
    extern int width_val; */
 extern int *svg_height;

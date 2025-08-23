@@ -5,7 +5,7 @@
 
 static int GetMaxNumberPorts(StructPort *port, int port_count);
 static int GetMaxNameSize(StructPort *port, int port_count);
-static void CalcPosComponents(StructComponent *component, int number_components);
+/* static void CalcPosComponents(StructComponent *component, int number_components); */
 static void CalcSizeComponents(StructComponent *component, int number_components);
 
 static int GetMaxNumberPorts(StructPort *port, int port_count){
@@ -39,24 +39,24 @@ static int GetMaxNameSize(StructPort *port, int port_count) {
 #define MARGIN_X 60
 #define MARGIN_Y 60
 
-static void CalcPosComponents(StructComponent *component, int number_components) {
-  int columns = ceil(sqrt(number_components));
-  printf("Columns:%d\n", columns);
-  int rows = ceil((float)number_components / columns);
-  printf("Rows:%d\n", rows);
-  int needed_width = GAP;
-  int needed_height = GAP;
-  int max_width_col[columns];
-  int max_height_row[rows];
-  
-  for(int i = 0; i < number_components; i++){
-    int col = i % columns;
-    int row = i / columns;
-
-    component[i].pos_x = MARGIN_X + col * GRID_W;
-    component[i].pos_y = MARGIN_Y + row * GRID_H;
-  }
-}
+/* static void CalcPosComponents(StructComponent *component, int number_components) {
+     int columns = ceil(sqrt(number_components));
+     printf("Columns:%d\n", columns);
+     int rows = ceil((float)number_components / columns);
+     printf("Rows:%d\n", rows);
+     int needed_width = GAP;
+     int needed_height = GAP;
+     int max_width_col[columns];
+     int max_height_row[rows];
+     
+     for(int i = 0; i < number_components; i++){
+       int col = i % columns;
+       int row = i / columns;
+   
+       component[i].pos_x = MARGIN_X + col * GRID_W;
+       component[i].pos_y = MARGIN_Y + row * GRID_H;
+     }
+   } */
 
 void PackRectanglesAuto(StructComponent *components, int number_components) {
   // --- Paso 1: calcular área total y dimensiones máximas ---
@@ -143,8 +143,8 @@ static void CalcSizeComponents(StructComponent *component, int number_components
   for(int i = 0; i < number_components; i++){
     component[i].width  = (10 * BestFit(GetMaxNameSize(component[i].ports, component[i].port_count),GetNameSize(component[i].component_name)) + 20)+GAP;  
     component[i].height = (GetMaxNumberPorts(component[i].ports, component[i].port_count) * 20 + 10)+GAP; 
-    printf("Component: %s\n", component[i].component_name);
-    printf("NumberPorts_height: %d\n", component[i].height - COMPONENT_HEIGHT_OFFSET);
+    /* printf("Component: %s\n", component[i].component_name);
+       printf("NumberPorts_height: %d\n", component[i].height - COMPONENT_HEIGHT_OFFSET); */
   }
 }
 

@@ -4,13 +4,8 @@
 static uint8_t **matrix;
 static Node nodes[ROWS][COLUMNS];
 
-Point **paths;
-int *paths_lengths;
-int num_paths;
-
 static int direction_x[4] = {0, 0, -1, 1};
 static int direction_y[4] = {-1, 1, 0, 0};
-
 
 static bool IsValidPoint(int x, int y);
 static int heuristic(int x1, int y1, int x2, int y2);
@@ -21,8 +16,9 @@ static void SavePathFound(int end_x, int end_y);
 static void InitializationMatrix();
 static void InitializationPaths();
 static void InitializationNodes(bool init);
-static void DrawMatrixWithPath(int path_index);
-static void VisualizePaths();
+
+/* static void DrawMatrixWithPath(int path_index);
+   static void VisualizePaths(); */
 
 void DrawMatrix(){
   for(int i=0;i<*svg_height;i++){
@@ -34,37 +30,6 @@ void DrawMatrix(){
     printf("\n");
   }
 }
-
-// ---------------------------- Main -----------------------------------
-/* int main(){
-     Initialization();
-     
-     // ------------------------ Ejemplo de obstáculos ------------------------
-     DefineRestriction(0, 0, 5, 3);    
-     DefineRestriction(9, 9, 3, 5);    
-     DefineRestriction(20, 20, 5, 5);  
-     DefineRestriction(45, 0, 5, 5);   
-     DefineRestriction(0, 45, 5, 5);   
-     DefineRestriction(40, 40, 5, 5);  
-   
-     // ------------------------ Casos de test ------------------------
-     PathFinderAStar(12, 10, 44, 1);       
-     PathFinderAStar(21, 25, 44, 1);       
-     PathFinderAStar(41, 45, 44, 1);       
-   
-     SimplifyPathsToCorners();
-   
-     printf("Matriz base:\n");
-     for(int i=0;i<ROWS;i++){
-       for(int j=0;j<COLUMNS;j++) printf("%c",matrix[i][j]==1?'#':'.');
-       printf("\n");
-     }
-   
-     VisualizePaths();
-   
-     FreeMemory();
-     return 0;
-   } */
 
 // ---------------------------- Helpers --------------------------------
 static bool IsValidPoint(int x, int y){
@@ -195,6 +160,7 @@ static void InitializationNodes(bool init){
 
 // ---------------------------- A* -----------------------
 void PathFinderAStar(int start_x, int start_y, int end_x, int end_y){
+  printf("A* start=(%d,%d) end=(%d,%d)\n", start_x, start_y, end_x, end_y);
   AreValidPoints(start_x, start_y, end_x, end_y);
   InitializationNodes(false);
 
@@ -233,54 +199,108 @@ void PathFinderAStar(int start_x, int start_y, int end_x, int end_y){
 
 void Initialization(){
   InitializationMatrix();
-  /* InitializationPaths();
-     InitializationNodes(true); */
+  InitializationPaths();
+  InitializationNodes(true);
+}
+
+
+void ConnectPorts(StructComponent *component, int number_components){
+  for (size_t i = 0; i < number_components; i++) {
+    for (size_t j = 0; j < component[i].port_count; j++) {
+
+      StructPort *p_out = &component[i].ports[j];
+
+      if (strcmp(p_out->direction,"out")!=0){
+	continue;
+      }
+
+      for (size_t a = 0; a < number_components; a++) {
+	for (size_t b = 0; b < component[a].port_count; b++) {
+
+	  StructPort *p_in = &component[a].ports[b];
+
+	  if (strcmp(p_in->direction,"in")==0 && strcmp(p_in->bus, p_out->bus)==0) {
+	    PathFinderAStar(p_out->x, p_out->y, p_in->x-1, p_in->y);           
+	  }
+	}
+      }
+    }
+  }
+}
+
+// Devuelve los paths calculados
+Point **get_paths(void) { return paths; }
+int *get_paths_lengths(void) { return paths_lengths; }
+int get_num_paths(void) { return num_paths; }
+
+// Imprime todos los paths guardados en consola
+void print_paths_debug(void) {
+    printf("=== Paths calculados: %d ===\n", num_paths);
+
+    for (int i = 0; i < num_paths; i++) {
+        printf("Path %d (len=%d): ", i, paths_lengths[i]);
+        for (int j = 0; j < paths_lengths[i]; j++) {
+            printf("(%d,%d)", paths[i][j].coord_x, paths[i][j].coord_y);
+            if (j < paths_lengths[i] - 1) printf(" -> ");
+        }
+        printf("\n");
+    }
 }
 
 void AutoRouter(StructComponent *component, int number_components){
   Initialization();
   DefineRestriction(component,number_components);
-  
+  /* DrawMatrix(); */
+  ConnectPorts(component, number_components);
+  SimplifyPathsToCorners();
+  print_paths_debug();
 }
 
-// ---------------------------- Restricciones y visual -----------------
+
+
 void DefineRestriction(StructComponent *component, int number_components){
-  for(int elemento = 0; elemento < number_components; elemento++){
-     for(int i = component[elemento].pos_y - (component[elemento].height/2); i < component[elemento].pos_y + (component[elemento].height/2); i++)
-      for(int j = component[elemento].pos_x - (component[elemento].width/2); j < component[elemento].pos_x + (component[elemento].width/2); j++)
+  for(int k = 0; k < number_components; k++){
+    int pos_x = component[k].pos_x;
+    int pos_y = component[k].pos_y;
+    int width = component[k].width-GAP;
+    int height = component[k].height-GAP;
+    for(int i = pos_y; i < pos_y + height && i < *svg_height; i++){
+      for(int j = pos_x; j < pos_x + width && j < *svg_width; j++){
 	matrix[i][j] = 1;
-  }
-}
-
-static void DrawMatrixWithPath(int path_index){
-  if(num_paths==0){ printf("No hay paths calculados\n"); return; }
-  if(path_index<0 || path_index>=num_paths){ printf("Índice inválido\n"); return; }
-
-  for(int i=0;i<ROWS;i++){
-    for(int j=0;j<COLUMNS;j++){
-      char c='.';
-      if(matrix[i][j]==1) c='#';
-      for(int k=0;k<paths_lengths[path_index];k++)
-	if(paths[path_index][k].coord_x==j && paths[path_index][k].coord_y==i){ c='*'; break; }
-      printf("%c",c);
+      }
     }
-    printf("\n");
   }
 }
 
-static void VisualizePaths(){
-  if(num_paths==0){ printf("No hay paths calculados\n"); return; }
-  int choice=0; char cmd;
-  while(1){
-    printf("\nMostrando path %d de %d:\n",choice,num_paths-1);
-    DrawMatrixWithPath(choice);
-    printf("\nComandos: n=next, p=prev, q=quit: ");
-    cmd=getchar(); while(getchar()!='\n');
-    if(cmd=='q') break;
-    else if(cmd=='n') choice=(choice+1)%num_paths;
-    else if(cmd=='p') choice=(choice-1+num_paths)%num_paths;
-  }
-}
+/* static void DrawMatrixWithPath(int path_index){
+     if(num_paths==0){ printf("No hay paths calculados\n"); return; }
+     if(path_index<0 || path_index>=num_paths){ printf("Índice inválido\n"); return; }
+   
+     for(int i=0;i<ROWS;i++){
+       for(int j=0;j<COLUMNS;j++){
+         char c='.';
+         if(matrix[i][j]==1) c='#';
+         for(int k=0;k<paths_lengths[path_index];k++)
+   	if(paths[path_index][k].coord_x==j && paths[path_index][k].coord_y==i){ c='*'; break; }
+         printf("%c",c);
+       }
+       printf("\n");
+     }
+   } */
+
+/* static void VisualizePaths(){
+     if(num_paths==0){ printf("No hay paths calculados\n"); return; }
+     int choice=0; char cmd;
+     while(1){
+       printf("\nMostrando path %d de %d:\n",choice,num_paths-1);
+       DrawMatrixWithPath(choice);
+       printf("\nComandos: n=next, p=prev, q=quit: ");
+       cmd=getchar(); while(getchar()!='\n');
+       if(cmd=='q') break;
+       else if(cmd=='n') choice=(choice+1)%num_paths;
+       else if(cmd=='p') choice=(choice-1+num_paths)%num_paths;
+     }
+   } */
 
 void SimplifyPathsToCorners() {
   for(int p = 0; p < num_paths; p++){

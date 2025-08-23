@@ -11,5 +11,9 @@ void DrawSVG();
    static void draw_component(FILE *f, const Component *c);
    static void route_bus(FILE *f, const Port *src, const Port *dst);
    static void draw_connections(FILE *f, Component *comps, size_t n); */
-
+/* void DrawSignal(StructComponent *component, int number_components); */
+void DrawComponents(StructComponent *component, int number_components);
+void StartSVG();
+void FinishSVG();
+void DrawPaths(void);
 #endif

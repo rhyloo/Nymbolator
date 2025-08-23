@@ -35,7 +35,7 @@ static void WriteFooter(){
   fprintf(svg_file,"</svg>\n");
 }
 
-static void DrawComponents(StructComponent *component, int number_components){
+void DrawComponents(StructComponent *component, int number_components){
   for(int i = 0; i < number_components; i++){
       int in_counter = 0,out_counter = 0;
     fprintf(svg_file, "<rect x='%d' y='%d' width='%d' height='%d'/>\n", component[i].pos_x, component[i].pos_y, component[i].width-GAP, component[i].height-GAP);
@@ -43,7 +43,6 @@ static void DrawComponents(StructComponent *component, int number_components){
    
     for (size_t j = 0; j < component[i].port_count; j++) {
       StructPort *p = &component[i].ports[j];
-      // short pin stub into the box
       if(strcmp(p->direction,"in") == 0){
 	p->x = component[i].pos_x;
 	p->y = component[i].pos_y + (in_counter+1)*10*1.5;
@@ -55,20 +54,37 @@ static void DrawComponents(StructComponent *component, int number_components){
 		      fprintf(svg_file, "<text class='label' x='%d' y='%d' text-anchor='end'>%s</text>\n", p->x-10, p->y+10, p->name);
 	out_counter++;
       }
-      fprintf(svg_file, "<rect x='%d' y='%d' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>\n", p->x-5, p->y);
+      int value_line_x, value_line_y;
+      int line_len = 4; // longitud de la línea
+      if(strcmp(p->direction,"in") == 0){
+        fprintf(svg_file, 
+		"<line x1='%d' y1='%d' x2='%d' y2='%d' style='stroke:blue;stroke-width:2'/>\n", 
+		p->x-5, p->y+5, p->x-5-line_len, p->y+5);
+	value_line_x = p->x-9;
+	value_line_y = p->y+5;
+      } else {
+        fprintf(svg_file, 
+          "<line x1='%d' y1='%d' x2='%d' y2='%d' style='stroke:blue;stroke-width:2'/>\n", 
+          p->x+5, p->y+5, p->x+5+line_len, p->y+5);
+	value_line_x = p->x;
+	value_line_y = p->y;
+      }
+            fprintf(svg_file, "<rect x='%d' y='%d' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>\n", p->x-5, p->y);
+	    p->x = value_line_x;
+	    	    p->y = value_line_y;
     }
   }
 }
 
-void DrawSVG(StructComponent *component, int number_components){
+void StartSVG(){
   CreateFile();
   WriteHeader();
-  DrawComponents(component,number_components);
-  /* DrawSignals(); */
+}
+
+void FinishSVG(){
   WriteFooter();
   printf("✅ diagram.svg generated.\n");
 }
- 
 
 /*   svg_header(f, canvas_w, canvas_h);
    
@@ -260,3 +276,29 @@ sx-6, sy-6, stats[s].bus);
 }
 }
 } */
+
+#define CELL_SIZE 1      // ajusta según tu escala
+
+// Esta función asume que cada Node tiene un flag path=true si forma parte del camino
+// y que tienes un canvas SVG o similar donde se dibuja.
+void DrawPaths(void) {
+    if (num_paths <= 0) return;
+
+    fprintf(svg_file, "<g id='paths' stroke='red' fill='none' stroke-width='2'>\n");
+
+    for (int i = 0; i < num_paths; i++) {
+        int len = paths_lengths[i];
+        if (len <= 1) continue;
+
+        // Dibujar el path i como una polilínea
+        fprintf(svg_file, "<polyline points='");
+        for (int j = 0; j < len; j++) {
+            int px = paths[i][j].coord_x * CELL_SIZE;
+            int py = paths[i][j].coord_y * CELL_SIZE;
+            fprintf(svg_file, "%d,%d ", px, py);
+        }
+        fprintf(svg_file, "' />\n");
+    }
+
+    fprintf(svg_file, "</g>\n");
+}

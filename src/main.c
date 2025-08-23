@@ -8,7 +8,11 @@ static int width_val  = WINDOWSIZE;
 int *svg_height = &height_val;
 int *svg_width  = &width_val;
 
-#define ELEMENTOS 8
+Point **paths;
+int *paths_lengths;
+int num_paths;
+
+#define ELEMENTOS 5
 
 int main() {
 
@@ -96,25 +100,18 @@ int main() {
     clk25gen,
     frame_buffer,
     address_generator,
-    debounce_circuit,
-    vga_imagegenerator,
-    ov7670_controller,
-    ov7670_capture
+    debounce_circuit
+    /* vga_imagegenerator,
+       ov7670_controller,
+       ov7670_capture */
   };
 
   (void) AutoLayout(comps, ELEMENTOS);
+  StartSVG();
+  DrawComponents(comps, ELEMENTOS);
   (void) AutoRouter(comps, ELEMENTOS);
-
-  /* Debugging */
-  for(int i = 0; i < ELEMENTOS; i++){
-      printf("Resultado: X: %d, Y: %d, Width: %d, Height: %d\n",comps[i].pos_x,comps[i].pos_y,comps[i].width,comps[i].height);
-    }
-  printf("WIND_HEIGHT: %d, WIND_WIDTH: %d\n", height_val, width_val);
-
-
-  /* Testing Drawer */
-  DrawSVG(comps,ELEMENTOS);
-
+  DrawPaths(); 	/* Change by DrawSVGSignals */
+  FinishSVG();  
   return 0;
 }
 
