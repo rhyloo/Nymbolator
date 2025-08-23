@@ -1,64 +1,24 @@
-#include "main.h"
 #include "stb_rect_pack.h"
-#include "auto_placer.h"
+
+#include "main.h"
 #include "tools.h"
 
-static int GetMaxNumberPorts(StructPort *port, int port_count);
-static int GetMaxNameSize(StructPort *port, int port_count);
-/* static void CalcPosComponents(StructComponent *component, int number_components); */
+#include "auto_placer.h"
+
+/*====================*/
+/*  Static Helpers    */
+/*====================*/
 static void CalcSizeComponents(StructComponent *component, int number_components);
-
-static int GetMaxNumberPorts(StructPort *port, int port_count){
-  int number_port_in = 0;
-  int number_port_out = 0;
-
-  for (int i = 0; i < port_count; i++) {
-    if(strcmp(port[i].direction,"in") == 0){
-      number_port_in++;
-    }else if(strcmp(port[i].direction,"out") == 0){
-      number_port_out++;
-    }
-  }
-  return max(number_port_in,number_port_out);
+static void PackRectanglesAuto(StructComponent *components, int number_components);
+static int EstimateBestFitting(int a, int b);
+  
+StructComponent* AutoLayout(StructComponent *component, int number_components) {
+  CalcSizeComponents(component, number_components);
+  PackRectanglesAuto(component, number_components);
+  return component;
 }
 
-static int GetMaxNameSize(StructPort *port, int port_count) {
-  int text_size = 0;
-  for (int i = 0; i < port_count; i++) {
-    int size = strlen(port[i].name);
-    if (size > text_size) {
-      text_size = size;
-    }
-  }
-  return text_size;
-}
-
-
-#define GRID_W 100
-#define GRID_H 100
-#define MARGIN_X 60
-#define MARGIN_Y 60
-
-/* static void CalcPosComponents(StructComponent *component, int number_components) {
-     int columns = ceil(sqrt(number_components));
-     printf("Columns:%d\n", columns);
-     int rows = ceil((float)number_components / columns);
-     printf("Rows:%d\n", rows);
-     int needed_width = GAP;
-     int needed_height = GAP;
-     int max_width_col[columns];
-     int max_height_row[rows];
-     
-     for(int i = 0; i < number_components; i++){
-       int col = i % columns;
-       int row = i / columns;
-   
-       component[i].pos_x = MARGIN_X + col * GRID_W;
-       component[i].pos_y = MARGIN_Y + row * GRID_H;
-     }
-   } */
-
-void PackRectanglesAuto(StructComponent *components, int number_components) {
+static void PackRectanglesAuto(StructComponent *components, int number_components) {
   // --- Paso 1: calcular área total y dimensiones máximas ---
   long total_area = 0;
   int max_w = 0, max_h = 0;
@@ -101,12 +61,17 @@ void PackRectanglesAuto(StructComponent *components, int number_components) {
 
     free(nodes);
 
+    int step = 5; // inicial
+
     if (!success) {
-      // Si falla, agrandar canvas sumando +20 al lado más pequeño
-      if (atlas_w < atlas_h)
-	atlas_w += GAP*5;
-      else
-	atlas_h += GAP*5;
+      if (atlas_w < atlas_h){
+	atlas_w += step;
+      }else{
+        atlas_h += step;
+      }
+      if (step > 1){
+	step--;
+      }
     }
   }
 
@@ -122,35 +87,51 @@ void PackRectanglesAuto(StructComponent *components, int number_components) {
   printf("Canvas final: %dx%d\n", atlas_w, atlas_h);
 }
 
-static int GetNameSize(char *name) {
-  int text_size = 0;
-  for (; *name != '\0'; name++) {
-    text_size++;
-  }
-  return text_size;
+
+
+/*
+ * EstimateBestFitting - Returns an estimated "best fit" size for a component.
+ *
+ * Parameters:
+ *   max_name_size_port   - Maximum name length among the component's ports
+ *   component_name_size  - Length of the component's own name
+ *
+ * Returns:
+ *   If max_name_size_port is larger, returns it.
+ *   Otherwise, returns the average of max_name_size_port and component_name_size.
+ *
+ * Description:
+ *   Used to estimate a suitable width for a component when laying out
+ *   its ports and name. Prefers the larger value, but averages if the
+ *   component's name is longer.
+ */
+static int EstimateBestFitting(int max_name_size_port, int component_name_size){
+    if (max_name_size_port > component_name_size) {
+        return max_name_size_port;
+    } else {
+        return (max_name_size_port + component_name_size) / 2;
+    }
 }
 
-static int BestFit(int a, int b){
-  if(a > b){
-    return a;
-  }else{
-    return (a+b)/2;
-  }
-  
-}
 
+
+/*
+ * CalcSizeComponents - Calculates width and height for each component.
+ *
+ * Parameters:
+ *   component         - array of StructComponent
+ *   number_components - number of components in the array
+ *
+ * Description:
+ *   For each component, the width is based on the longer of the component
+ *   name or the longest port name, scaled by character width plus padding.
+ *   The height is based on the number of ports multiplied by port height plus padding.
+ */
 static void CalcSizeComponents(StructComponent *component, int number_components) {
   for(int i = 0; i < number_components; i++){
-    component[i].width  = (10 * BestFit(GetMaxNameSize(component[i].ports, component[i].port_count),GetNameSize(component[i].component_name)) + 20)+GAP;  
+    component[i].width  = (10 * EstimateBestFitting(GetMaxNameSize(component[i].ports, component[i].port_count),GetNameSize(component[i].component_name)) + 20)+GAP;  
     component[i].height = (GetMaxNumberPorts(component[i].ports, component[i].port_count) * 20 + 10)+GAP; 
     /* printf("Component: %s\n", component[i].component_name);
        printf("NumberPorts_height: %d\n", component[i].height - COMPONENT_HEIGHT_OFFSET); */
   }
-}
-
-StructComponent* AutoLayout(StructComponent *component, int number_components) {
-  CalcSizeComponents(component, number_components);
-  PackRectanglesAuto(component, number_components);
-  /* DefineRestriction(component, number_components); */
-  return component;
 }

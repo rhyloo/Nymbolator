@@ -110,8 +110,8 @@ int main() {
   (void) AutoLayout(comps, ELEMENTOS);
   StartSVG();
   DrawComponents(comps, ELEMENTOS);
-  (void) AutoRouter(comps, ELEMENTOS);
-  DrawPaths(); 	/* Change by DrawSVGSignals */
+  /* (void) AutoRouter(comps, ELEMENTOS); */
+  /* DrawPaths(); 	/\* Change by DrawSVGSignals *\/ */
   FinishSVG();  
   return 0;
 }

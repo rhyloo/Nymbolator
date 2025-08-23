@@ -15,8 +15,14 @@
 #include <stdint.h>
 #include <math.h>
 
-#define GAP 30
+#define BORDER_SEP 30
+#define GAP 35
+#define GAP_SEP 10
 #define WINDOWSIZE 1024
+#define CHAR_WIDTH 10
+#define PORT_HEIGHT 20
+#define PADDING_WIDTH 20
+#define PADDING_HEIGHT 10
 
 typedef struct {
     const char *name;       // port label shown near the pin
