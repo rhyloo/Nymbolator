@@ -17,4 +17,5 @@ void PathFinderAStar(int start_x, int start_y, int end_x, int end_y);
 void SimplifyPathsToCorners();
 void FreeMemory();
 void AutoRouter(StructComponent *component, int number_components);
+void DebugMatrixSVG(FILE *svg_file);
 #endif

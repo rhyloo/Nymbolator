@@ -15,8 +15,28 @@
 #include <stdint.h>
 #include <math.h>
 
-#define BORDER_SEP 30
-#define GAP 35
+#define BORDER_SEP_X 50
+#define BORDER_SEP_Y 50
+
+#define PORT_SIZE 10
+#define GAP (PORT_SIZE + 5)
+
+#define WIDTH_SCALER 10
+#define WIDTH_EXTRA_SEP 25
+#define GAP_WIDTH (GAP + WIDTH_EXTRA_SEP)
+
+
+#define HEIGHT_SCALER 20	/* Definitiva */
+#define HEIGHT_OFFSET 10        /* Definitiva */
+#define WIDTH_OFFSET 5        /* Definitiva */
+
+
+#define HEIGHT_EXTRA_SEP 15
+#define GAP_HEIGHT (GAP + HEIGHT_EXTRA_SEP)
+
+
+
+
 #define GAP_SEP 10
 #define WINDOWSIZE 1024
 #define CHAR_WIDTH 10

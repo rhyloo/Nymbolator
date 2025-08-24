@@ -2,8 +2,7 @@
 #include "auto_router.h"
 
 static uint8_t **matrix;
-static Node nodes[ROWS][COLUMNS];
-
+static Node **nodes;
 static int direction_x[4] = {0, 0, -1, 1};
 static int direction_y[4] = {-1, 1, 0, 0};
 
@@ -41,7 +40,7 @@ static int heuristic(int x1, int y1, int x2, int y2){
 }
 
 static void ValidNeighbor(int child_x, int child_y, int neighbor_x, int neighbor_y, int end_x, int end_y){
-  if(neighbor_x < 0 || neighbor_x >= COLUMNS || neighbor_y < 0 || neighbor_y >= ROWS) return;
+  if(neighbor_x < 0 || neighbor_x >= *svg_width || neighbor_y < 0 || neighbor_y >= *svg_height) return;
   if(!IsValidPoint(neighbor_x, neighbor_y)) return;
   if(nodes[neighbor_y][neighbor_x].list_closed) return;
 
@@ -59,11 +58,11 @@ static void ValidNeighbor(int child_x, int child_y, int neighbor_x, int neighbor
 }
 
 static void AreValidPoints(int start_x, int start_y, int end_x, int end_y){
-  if(start_x < 0 || start_x >= COLUMNS || start_y < 0 || start_y >= ROWS){
+  if(start_x < 0 || start_x >= *svg_width || start_y < 0 || start_y >= *svg_height){
     fprintf(stderr, "Start fuera de rango\n");
     exit(1);
   }
-  if(end_x < 0 || end_x >= COLUMNS || end_y < 0 || end_y >= ROWS){
+  if(end_x < 0 || end_x >= *svg_width || end_y < 0 || end_y >= *svg_height){
     fprintf(stderr, "End fuera de rango\n");
     exit(1);
   }
@@ -79,8 +78,8 @@ static void AreValidPoints(int start_x, int start_y, int end_x, int end_y){
 
 static Node* GetLowestF(){
   Node *best = NULL;
-  for(int i = 0; i < ROWS; i++){
-    for(int j = 0; j < COLUMNS; j++){
+  for(int i = 0; i < *svg_height; i++){
+    for(int j = 0; j < *svg_width; j++){
       if(nodes[i][j].list_open){
 	if(best == NULL || nodes[i][j].f_cost < best->f_cost)
 	  best = &nodes[i][j];
@@ -140,8 +139,12 @@ static void InitializationPaths(){
 }
 
 static void InitializationNodes(bool init){
-  for(int i = 0; i < ROWS; i++)
-    for(int j = 0; j < COLUMNS; j++){
+  nodes = malloc(*svg_height * sizeof(Node*));
+  for (int i = 0; i < *svg_height; i++) {
+    nodes[i] = malloc(*svg_width * sizeof(Node));
+  }
+  for(int i = 0; i < *svg_height; i++)
+    for(int j = 0; j < *svg_width; j++){
       if(init){
 	nodes[i][j].child.coord_x = j;
 	nodes[i][j].child.coord_y = i;
@@ -197,6 +200,8 @@ void PathFinderAStar(int start_x, int start_y, int end_x, int end_y){
   }
 }
 
+
+
 void Initialization(){
   InitializationMatrix();
   InitializationPaths();
@@ -220,7 +225,8 @@ void ConnectPorts(StructComponent *component, int number_components){
 	  StructPort *p_in = &component[a].ports[b];
 
 	  if (strcmp(p_in->direction,"in")==0 && strcmp(p_in->bus, p_out->bus)==0) {
-	    PathFinderAStar(p_out->x, p_out->y, p_in->x-1, p_in->y);           
+	    
+	    PathFinderAStar(p_out->x+10, p_out->y+5, p_in->x, p_in->y+(HEIGHT_OFFSET/2));
 	  }
 	}
       }
@@ -235,16 +241,16 @@ int get_num_paths(void) { return num_paths; }
 
 // Imprime todos los paths guardados en consola
 void print_paths_debug(void) {
-    printf("=== Paths calculados: %d ===\n", num_paths);
+  printf("=== Paths calculados: %d ===\n", num_paths);
 
-    for (int i = 0; i < num_paths; i++) {
-        printf("Path %d (len=%d): ", i, paths_lengths[i]);
-        for (int j = 0; j < paths_lengths[i]; j++) {
-            printf("(%d,%d)", paths[i][j].coord_x, paths[i][j].coord_y);
-            if (j < paths_lengths[i] - 1) printf(" -> ");
-        }
-        printf("\n");
+  for (int i = 0; i < num_paths; i++) {
+    printf("Path %d (len=%d): ", i, paths_lengths[i]);
+    for (int j = 0; j < paths_lengths[i]; j++) {
+      printf("(%d,%d)", paths[i][j].coord_x, paths[i][j].coord_y);
+      if (j < paths_lengths[i] - 1) printf(" -> ");
     }
+    printf("\n");
+  }
 }
 
 void AutoRouter(StructComponent *component, int number_components){
@@ -257,50 +263,70 @@ void AutoRouter(StructComponent *component, int number_components){
 }
 
 
-
-void DefineRestriction(StructComponent *component, int number_components){
-  for(int k = 0; k < number_components; k++){
-    int pos_x = component[k].pos_x;
-    int pos_y = component[k].pos_y;
-    int width = component[k].width-GAP;
-    int height = component[k].height-GAP;
-    for(int i = pos_y; i < pos_y + height && i < *svg_height; i++){
-      for(int j = pos_x; j < pos_x + width && j < *svg_width; j++){
-	matrix[i][j] = 1;
+void DebugMatrixSVG(FILE *svg_file) {
+  for (int i = 0; i < *svg_height; i++) {
+    for (int j = 0; j < *svg_width; j++) {
+      if (matrix[i][j] == 1) {
+	fprintf(svg_file,
+		"<rect x='%d' y='%d' width='1' height='1' style='fill:red;stroke:none'/>\n",
+		j, i);
       }
     }
   }
 }
 
-/* static void DrawMatrixWithPath(int path_index){
-     if(num_paths==0){ printf("No hay paths calculados\n"); return; }
-     if(path_index<0 || path_index>=num_paths){ printf("Índice inválido\n"); return; }
-   
-     for(int i=0;i<ROWS;i++){
-       for(int j=0;j<COLUMNS;j++){
-         char c='.';
-         if(matrix[i][j]==1) c='#';
-         for(int k=0;k<paths_lengths[path_index];k++)
-   	if(paths[path_index][k].coord_x==j && paths[path_index][k].coord_y==i){ c='*'; break; }
-         printf("%c",c);
-       }
-       printf("\n");
-     }
-   } */
+#define TITLE_OFFSET 15
+#define PORT_RESTRICT_SIZE 6   // ancho y alto de la caja prohibida del puerto
 
-/* static void VisualizePaths(){
-     if(num_paths==0){ printf("No hay paths calculados\n"); return; }
-     int choice=0; char cmd;
-     while(1){
-       printf("\nMostrando path %d de %d:\n",choice,num_paths-1);
-       DrawMatrixWithPath(choice);
-       printf("\nComandos: n=next, p=prev, q=quit: ");
-       cmd=getchar(); while(getchar()!='\n');
-       if(cmd=='q') break;
-       else if(cmd=='n') choice=(choice+1)%num_paths;
-       else if(cmd=='p') choice=(choice-1+num_paths)%num_paths;
-     }
-   } */
+#define PORT_W 8   // ancho de la zona prohibida del puerto
+#define PORT_H 4   // alto de la zona prohibida del puerto
+
+void DefineRestriction(StructComponent *component, int number_components) {
+  for (int k = 0; k < number_components; k++) {
+    int pos_x = component[k].pos_x - 4;
+    int pos_y = component[k].pos_y - TITLE_OFFSET;
+    int width  = component[k].width + 9 ;
+    int height = component[k].height + TITLE_OFFSET + 2;
+
+    // --- Restricción del bloque completo (con título) ---
+    for (int i = pos_y; i < pos_y + height && i < *svg_height; i++) {
+      for (int j = pos_x; j < pos_x + width && j < *svg_width; j++) {
+	matrix[i][j] = 1;
+      }
+    }
+
+    // --- Restricciones extra en cada puerto ---
+    for (size_t p = 0; p < component[k].port_count; p++) {
+      int px = component[k].ports[p].x;
+      int py = component[k].ports[p].y;
+
+      if (strcmp(component[k].ports[p].direction, "in") == 0) {
+	// Zona prohibida extendida a la IZQUIERDA del puerto
+	for (int i = py-1; i <= py + 10 ; i++) {
+	  if(i != py + 4 && i != py + 5){
+	    if (i < 0 || i >= *svg_height) continue;
+	    for (int j = px - 5; j <= px; j++) {
+	      if (j < 0 || j >= *svg_width) continue;
+	      matrix[i][j] = 1;
+	    }
+	  }
+	}
+      }
+      else if (strcmp(component[k].ports[p].direction, "out") == 0) {
+	// Zona prohibida extendida a la DERECHA del puerto
+	for (int i = py-1; i <= py + 10 ; i++) {
+	  if(i != py + 4 && i != py + 5){
+	    if (i < 0 || i >= *svg_height) continue;
+	    for (int j = px; j <= px + 15; j++) {
+	      if (j < 0 || j >= *svg_width) continue;
+	      matrix[i][j] = 1;
+	    }
+	  }
+	}
+      }
+    }
+  }
+}
 
 void SimplifyPathsToCorners() {
   for(int p = 0; p < num_paths; p++){
@@ -338,12 +364,10 @@ void SimplifyPathsToCorners() {
 
 // ---------------------------- Liberación memoria --------------------
 void FreeMemory(){
-  for(int i = 0; i < ROWS; i++) free(matrix[i]);
+  for(int i = 0; i < *svg_height; i++) free(matrix[i]);
   free(matrix);
 
   for(int i = 0; i < num_paths; i++) free(paths[i]);
   free(paths);
   free(paths_lengths);
 }
-
-

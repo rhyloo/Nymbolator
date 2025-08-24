@@ -1,6 +1,7 @@
 // -*- compile-command: "(cd ../ && make compile)"; -*-
 #include "main.h"
 #include "drawer.h"
+#include "auto_router.h"
 
 static FILE *svg_file;
 
@@ -37,41 +38,20 @@ static void WriteFooter(){
 
 void DrawComponents(StructComponent *component, int number_components){
   for(int i = 0; i < number_components; i++){
-      int in_counter = 0,out_counter = 0;
-    fprintf(svg_file, "<rect x='%d' y='%d' width='%d' height='%d'/>\n", component[i].pos_x, component[i].pos_y, component[i].width-GAP, component[i].height-GAP);
-    fprintf(svg_file, "<text class='label' x='%d' y='%d' text-anchor='middle' style='font-weight:bold;'>%s</text>\n", component[i].pos_x + (component[i].width-GAP)/2, component[i].pos_y - 5, component[i].component_name);
+    fprintf(svg_file, "<rect x='%d' y='%d' width='%d' height='%d'/>\n", component[i].pos_x, component[i].pos_y, component[i].width, component[i].height);
+    fprintf(svg_file, "<text class='label' x='%d' y='%d' text-anchor='middle' style='font-weight:bold;'>%s</text>\n", component[i].pos_x + (component[i].width)/2, component[i].pos_y - 5, component[i].component_name);
    
     for (size_t j = 0; j < component[i].port_count; j++) {
-      StructPort *p = &component[i].ports[j];
-      if(strcmp(p->direction,"in") == 0){
-	p->x = component[i].pos_x;
-	p->y = component[i].pos_y + (in_counter+1)*10*1.5;
-	      fprintf(svg_file, "<text class='label' x='%d' y='%d' text-anchor='start'>%s</text>\n", p->x+10, p->y+10, p->name);
-	in_counter++;
-      }else{
-	p->x = component[i].pos_x + component[i].width-GAP;
-	p->y = component[i].pos_y + (out_counter+1)*10*1.5;
-		      fprintf(svg_file, "<text class='label' x='%d' y='%d' text-anchor='end'>%s</text>\n", p->x-10, p->y+10, p->name);
-	out_counter++;
-      }
-      int value_line_x, value_line_y;
-      int line_len = 4; // longitud de la línea
-      if(strcmp(p->direction,"in") == 0){
-        fprintf(svg_file, 
-		"<line x1='%d' y1='%d' x2='%d' y2='%d' style='stroke:blue;stroke-width:2'/>\n", 
-		p->x-5, p->y+5, p->x-5-line_len, p->y+5);
-	value_line_x = p->x-9;
-	value_line_y = p->y+5;
-      } else {
-        fprintf(svg_file, 
-          "<line x1='%d' y1='%d' x2='%d' y2='%d' style='stroke:blue;stroke-width:2'/>\n", 
-          p->x+5, p->y+5, p->x+5+line_len, p->y+5);
-	value_line_x = p->x;
-	value_line_y = p->y;
-      }
-            fprintf(svg_file, "<rect x='%d' y='%d' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>\n", p->x-5, p->y);
-	    p->x = value_line_x;
-	    	    p->y = value_line_y;
+      /* fprintf(svg_file, "<text class='label' x='%d' y='%d' text-anchor='start'>%s</text>\n", component[i].ports[j].x, component[i].ports[j].y, component[i].ports[j].name); */
+	     fprintf(svg_file, "<rect x='%d' y='%d' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>\n", component[i].ports[j].x, component[i].ports[j].y);
+	     fprintf(svg_file,
+    "<rect x='%d' y='%d' width='2' height='2' style='fill:red;stroke:none'/>\n",
+    component[i].ports[j].x,
+    component[i].ports[j].y);
+	     fprintf(svg_file,
+    "<rect x='%d' y='%d' width='1' height='1' style='fill:yellow;stroke:none'/>\n",
+125,
+160+5);
     }
   }
 }
@@ -82,6 +62,7 @@ void StartSVG(){
 }
 
 void FinishSVG(){
+  /* DebugMatrixSVG(svg_file); */
   WriteFooter();
   printf("✅ diagram.svg generated.\n");
 }
@@ -284,7 +265,7 @@ sx-6, sy-6, stats[s].bus);
 void DrawPaths(void) {
     if (num_paths <= 0) return;
 
-    fprintf(svg_file, "<g id='paths' stroke='red' fill='none' stroke-width='2'>\n");
+    fprintf(svg_file, "<g id='paths' stroke='blue' fill='none' stroke-width='1'>\n");
 
     for (int i = 0; i < num_paths; i++) {
         int len = paths_lengths[i];

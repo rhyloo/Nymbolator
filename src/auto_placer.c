@@ -11,10 +11,14 @@
 static void CalcSizeComponents(StructComponent *component, int number_components);
 static void PackRectanglesAuto(StructComponent *components, int number_components);
 static int EstimateBestFitting(int a, int b);
-  
+static void CleanSizes(StructComponent *components, int number_components);
+static void CalcPortPos(StructComponent *components, int number_components);
+
 StructComponent* AutoLayout(StructComponent *component, int number_components) {
   CalcSizeComponents(component, number_components);
   PackRectanglesAuto(component, number_components);
+  CleanSizes(component, number_components);
+  CalcPortPos(component, number_components);
   return component;
 }
 
@@ -77,13 +81,13 @@ static void PackRectanglesAuto(StructComponent *components, int number_component
 
   // Transferir posiciones a components
   for (int i = 0; i < number_components; i++) {
-    components[rects[i].id].pos_x = rects[i].x+GAP;
-    components[rects[i].id].pos_y = rects[i].y+GAP;
+    components[rects[i].id].pos_x = rects[i].x+BORDER_SEP_X;
+    components[rects[i].id].pos_y = rects[i].y+BORDER_SEP_Y;
   }
 
   free(rects);
-  *svg_height=atlas_h;
-  *svg_width=atlas_w;
+  *svg_height = atlas_h + BORDER_SEP_Y;
+  *svg_width = atlas_w + BORDER_SEP_X;
   printf("Canvas final: %dx%d\n", atlas_w, atlas_h);
 }
 
@@ -106,13 +110,12 @@ static void PackRectanglesAuto(StructComponent *components, int number_component
  *   component's name is longer.
  */
 static int EstimateBestFitting(int max_name_size_port, int component_name_size){
-    if (max_name_size_port > component_name_size) {
-        return max_name_size_port;
-    } else {
-        return (max_name_size_port + component_name_size) / 2;
-    }
+  if (max_name_size_port > component_name_size) {
+    return max_name_size_port;
+  } else {
+    return (max_name_size_port + component_name_size) / 2;
+  }
 }
-
 
 
 /*
@@ -127,11 +130,67 @@ static int EstimateBestFitting(int max_name_size_port, int component_name_size){
  *   name or the longest port name, scaled by character width plus padding.
  *   The height is based on the number of ports multiplied by port height plus padding.
  */
+
 static void CalcSizeComponents(StructComponent *component, int number_components) {
+  int port_name_size = 0;
+  int component_name_size = 0;
+  int width = 0;
+  int height = 0;
+  
   for(int i = 0; i < number_components; i++){
-    component[i].width  = (10 * EstimateBestFitting(GetMaxNameSize(component[i].ports, component[i].port_count),GetNameSize(component[i].component_name)) + 20)+GAP;  
-    component[i].height = (GetMaxNumberPorts(component[i].ports, component[i].port_count) * 20 + 10)+GAP; 
-    /* printf("Component: %s\n", component[i].component_name);
-       printf("NumberPorts_height: %d\n", component[i].height - COMPONENT_HEIGHT_OFFSET); */
+    component_name_size = GetNameSize(component[i].component_name);
+    port_name_size = GetMaxNameSize(component[i].ports, component[i].port_count);
+    
+    width = EstimateBestFitting(component_name_size, port_name_size);
+    height = GetMaxNumberPorts(component[i].ports, component[i].port_count);
+    
+    component[i].width  = width * WIDTH_SCALER + GAP_WIDTH;
+    component[i].height = (height * HEIGHT_SCALER) + HEIGHT_OFFSET + GAP_HEIGHT;
+  }
+}
+
+static void CleanSizes(StructComponent *component, int number_components){
+  for(int i = 0; i < number_components; i++){
+    component[i].width  = component[i].width - GAP_WIDTH;
+    component[i].height = component[i].height - GAP_HEIGHT;
+  }
+}
+/* Restar 5 a la posición en "y" y sumar 5 al height*/
+
+static void CalcPortPos(StructComponent *component, int number_components){
+  for(int i = 0; i < number_components; i++){
+    int in_counter = 1,out_counter = 1;
+    for (size_t j = 0; j < component[i].port_count; j++) {
+      StructPort *p = &component[i].ports[j];
+      if(strcmp(p->direction,"in") == 0){
+    	p->x = component[i].pos_x - WIDTH_OFFSET;
+    	p->y = component[i].pos_y + (in_counter)*HEIGHT_SCALER - HEIGHT_OFFSET;
+    	in_counter++;
+      }else{
+    	p->x = component[i].pos_x + component[i].width - WIDTH_OFFSET;
+    	p->y = component[i].pos_y + (out_counter)*HEIGHT_SCALER - HEIGHT_OFFSET;
+    	out_counter++;
+      }
+      printf("Componente: %s, Altura: %d\n", component[i].component_name, component[i].height);
+            printf("Componente: %s, Nombre: %s, direccion: %s, pos_x: %d, pos_y: %d\n",component[i].component_name,p->name ,p->direction, p->x, p->y);
+      /* int value_line_x, value_line_y;
+         int line_len = 4; // longitud de la línea
+         if(strcmp(p->direction,"in") == 0){
+           fprintf(svg_file, 
+         		"<line x1='%d' y1='%d' x2='%d' y2='%d' style='stroke:blue;stroke-width:2'/>\n", 
+         		p->x-5, p->y+5, p->x-5-line_len, p->y+5);
+         	value_line_x = p->x-9;
+         	value_line_y = p->y+5;
+         } else {
+           fprintf(svg_file, 
+         		"<line x1='%d' y1='%d' x2='%d' y2='%d' style='stroke:blue;stroke-width:2'/>\n", 
+         		p->x+5, p->y+5, p->x+5+line_len, p->y+5);
+         	value_line_x = p->x;
+         	value_line_y = p->y;
+         }
+         fprintf(svg_file, "<rect x='%d' y='%d' width='10' height='10' style='fill:green;stroke:black;rx:0;ry:0'/>\n", p->x-5, p->y);
+         p->x = value_line_x;
+         p->y = value_line_y; */
+    }
   }
 }
