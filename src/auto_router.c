@@ -13,22 +13,9 @@ static void AreValidPoints(int start_x, int start_y, int end_x, int end_y);
 static Node* GetLowestF();
 static void SavePathFound(int end_x, int end_y);
 static void InitializationMatrix();
-static void InitializationPaths();
 static void InitializationNodes(bool init);
-
-/* static void DrawMatrixWithPath(int path_index);
-   static void VisualizePaths(); */
-
-void DrawMatrix(){
-  for(int i=0;i<*svg_height;i++){
-    for(int j=0;j<*svg_width;j++){
-      char c='.';
-      if(matrix[i][j]==1) c='#';
-      printf("%c",c);
-    }
-    printf("\n");
-  }
-}
+static void SimplifyPathsToCorners();
+static void print_paths_debug(void);
 
 // ---------------------------- Helpers --------------------------------
 static bool IsValidPoint(int x, int y){
@@ -132,12 +119,6 @@ static void InitializationMatrix(){
   }
 }
 
-static void InitializationPaths(){
-  paths = NULL;
-  paths_lengths = NULL;
-  num_paths = 0;
-}
-
 static void InitializationNodes(bool init){
   nodes = malloc(*svg_height * sizeof(Node*));
   for (int i = 0; i < *svg_height; i++) {
@@ -204,7 +185,6 @@ void PathFinderAStar(int start_x, int start_y, int end_x, int end_y){
 
 void Initialization(){
   InitializationMatrix();
-  InitializationPaths();
   InitializationNodes(true);
 }
 
@@ -234,13 +214,9 @@ void ConnectPorts(StructComponent *component, int number_components){
   }
 }
 
-// Devuelve los paths calculados
-Point **get_paths(void) { return paths; }
-int *get_paths_lengths(void) { return paths_lengths; }
-int get_num_paths(void) { return num_paths; }
 
 // Imprime todos los paths guardados en consola
-void print_paths_debug(void) {
+static void print_paths_debug(void) {
   printf("=== Paths calculados: %d ===\n", num_paths);
 
   for (int i = 0; i < num_paths; i++) {
@@ -328,7 +304,7 @@ void DefineRestriction(StructComponent *component, int number_components) {
   }
 }
 
-void SimplifyPathsToCorners() {
+static void SimplifyPathsToCorners() {
   for(int p = 0; p < num_paths; p++){
     int len = paths_lengths[p];
     if(len <= 2) continue; // no hay que simplificar

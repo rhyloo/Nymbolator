@@ -9,11 +9,11 @@ static int width_val  = WINDOWSIZE;
 int *svg_height = &height_val;
 int *svg_width  = &width_val;
 
-Point **paths;
-int *paths_lengths;
-int num_paths;
+Point **paths = NULL;
+int *paths_lengths = NULL;
+int num_paths = 0;
 
-#define ELEMENTOS 8
+#define ELEMENTOS 3
 
 int main() {
 
@@ -99,12 +99,12 @@ int main() {
   StructComponent comps[] = {
     VGA_timing_synch,
     clk25gen,
-    frame_buffer,
-    address_generator,
-    debounce_circuit,
-    vga_imagegenerator,
-    ov7670_controller,
-    ov7670_capture
+    /* frame_buffer, */
+    address_generator, 
+    /* debounce_circuit, */
+    vga_imagegenerator
+    /* ov7670_controller,
+       ov7670_capture */
   };
 
   (void) AutoLayout(comps, ELEMENTOS);
