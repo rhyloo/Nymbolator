@@ -13,7 +13,7 @@ Point **paths = NULL;
 int *paths_lengths = NULL;
 int num_paths = 0;
 
-#define ELEMENTOS 3
+#define ELEMENTOS 8
 
 int main() {
 
@@ -99,12 +99,12 @@ int main() {
   StructComponent comps[] = {
     VGA_timing_synch,
     clk25gen,
-    /* frame_buffer, */
+    frame_buffer,
     address_generator, 
-    /* debounce_circuit, */
-    vga_imagegenerator
-    /* ov7670_controller,
-       ov7670_capture */
+    debounce_circuit,
+    vga_imagegenerator,
+    ov7670_controller,
+    ov7670_capture
   };
 
   (void) AutoLayout(comps, ELEMENTOS);
