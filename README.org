@@ -1,0 +1,68 @@
+#+title: Nymbolator
+#+subtitle: *STATUS: EXPERIMENTAL*
+#+author: Rhyloo
+#+date: <2025-12-27 Sat>
+#+cover_image: ./../projects/files/cover/NymbolatorIcon.png
+#+options: toc:nil num:nil
+
+#+begin_quote
+A [[https://github.com/kevinpt][guy]] wrote a great piece of software 8 years ago and, for whatever reason, left it behind. This is my experimental evolution of the original [[https://github.com/kevinpt/symbolator][symbolator]].
+#+end_quote
+
+* Description
+Nymbolator is a simple idea:
+
+#+begin_center
+/Take a design written in VHDL and draw it./
+#+end_center
+
+Expensive, closed-source giants like Vivado (AMD) and Quartus (Intel) have built-in schematic viewers, but they are heavy, slow, and locked behind gigabytes of installation files. Nymbolator tries to keep it lightweight and focused.
+
+#+begin_center
+/Because at the end of the day, it's just a plotter./
+#+end_center
+
+* Key Features
+/Disclaimer: These features are not implemented in the usual common way yet. The parser exists, but it is not joined with the rest of the code and is currently very basic./
+
+- *Simple:* Just C code.
+- *Draws at block diagram Level.*
+- *Lightweight:* No need to launch a multi-gigabyte IDE just to see your component's port map.
+- *VHDL Parsing:* Automatically extracts entity signals and generics.
+
+** Result
+The =.vhdl= file used to generate the image is in the =media= folder. Check it out!
+
+[[./media/diagram.svg]]
+
+* Usage
+The code always searches for a file called =top.vhdl= in the input folder.
+
+#+begin_src bash
+git clone https://github.com/rhyloo/Nymbolator.git
+git checkout develop
+mkdir bin
+make
+#+end_src
+
+* FAQ
+
+** Why did I start Nymbolator?
+I wanted to understand and edit this repo: [[https://github.com/jasonsetiawan/ov7670_vga_Nexys2]]. I thought it would be great to have a tool that let me see how the module was done. I mean, I can draw manually and read the code, but if you can do something like =./plot_this=, I prefer it.
+
+** Why in C?
+I have two main reasons to use C:
+
+- First, I had problems with Python and Symbolator. Since Python is part of Debian-based distros, installing a package like =pip install <package>= is a mess now. I mean, I don't want to create an environment for every code I write or test. Also, =--break-system-packages= is not a good solution; you are breaking something. I didn't want it for my project.
+
+- Second, I wanted to practice my C skills and remember how pointers, opening files, etc., worked.
+
+** Are you sure there aren't tools like this?
+I think the answer is "no," unless I lost my search skills because of AI. If you have a tool suggestion, I am open to using it. Here are some links I visited before:
+
+- [[https://www.reddit.com/r/FPGA/comments/7s1x3c/vhdl_tools_for_visualizing_the_components_and/][Reddit Thread]] (8 years ago)
+  - /Netlistsvg/ is at RTL level, I wanted something at block diagram level.
+- [[https://stackoverflow.com/questions/12102842/graph-schematic-generator-for-vhdl][StackOverflow]] (13 years ago)
+- [[https://groups.google.com/g/comp.lang.vhdl/c/YnuxOCE56kg?pli=1][Google Groups]] (26 years ago!)
+- [[https://www.reddit.com/r/FPGA/comments/lmsyxo/tool_for_architectural_level_blockdiagram_design/][Reddit Thread]] (5 years ago)
+- [[https://stackoverflow.com/questions/1156243/program-for-drawing-vhdl-block-diagrams][StackOverflow]] (16 years ago)
